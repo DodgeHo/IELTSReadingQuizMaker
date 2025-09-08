@@ -33,13 +33,13 @@
     <section class="pane" id="right">${rightContent}</section>
   </div>
   <script>
-    // 高亮/批注工具栏
+    // Hightlight/Note工具栏
     var selbar = document.createElement('div');
     selbar.id = 'selbar';
     selbar.innerHTML = `
-      <button id='btnHL'>高亮</button>
-      <button id='btnUH'>取消高亮</button>
-      <button id='btnNote'>批注</button>
+      <button id='btnHL'>Hightlight</button>
+      <button id='btnUH'>Remove</button>
+      <button id='btnNote'>Note</button>
     `;
     document.body.appendChild(selbar);
     var lastRange = null;
@@ -93,10 +93,10 @@
     }
     document.getElementById('btnHL').onclick = doHighlight;
     document.getElementById('btnUH').onclick = removeHighlight;
-    // 批注功能
+    // Note功能
     var notes = document.createElement('div');
     notes.id = 'notes';
-    notes.innerHTML = `<header><span>批注</span><button id='btnClose'>关闭</button></header><textarea id='noteArea' placeholder='请输入批注内容...'></textarea>`;
+    notes.innerHTML = `<header><span>Note</span><button id='btnClose'>关闭</button></header><textarea id='noteArea' placeholder='Your note...'></textarea>`;
     document.body.appendChild(notes);
     document.getElementById('btnNote').onclick = function() {
       notes.style.display = 'flex';

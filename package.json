@@ -14,6 +14,8 @@
   "description": "IELTS 阅读题网页生成器",
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-quill": "^2.0.0"

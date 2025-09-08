@@ -1,6 +1,5 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
-const { ipcMain, dialog } = require('electron');
 const fs = require('fs');
 
 function createWindow() {
@@ -14,33 +13,51 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
-
-  // 监听保存 HTML 请求
-  ipcMain.handle('save-html', async (event, { html, defaultFileName }) => {
-    // 默认保存到 output 文件夹，文件名为文章标题（非法字符自动替换）
-    const outputDir = path.join(__dirname, 'output');
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir);
-    }
-    let fileName = defaultFileName || 'IELTS_Reading_Export.html';
-    // 替换非法文件名字符
-    fileName = fileName.replace(/[/\\:*?"<>|]/g, '_');
-    if (!fileName.toLowerCase().endsWith('.html')) fileName += '.html';
-    const defaultPath = path.join(outputDir, fileName);
-    const { filePath } = await dialog.showSaveDialog(mainWindow, {
-      title: '保存导出 HTML',
-      defaultPath,
-      filters: [{ name: 'HTML 文件', extensions: ['html'] }],
-    });
-    if (filePath) {
-      fs.writeFileSync(filePath, html, 'utf-8');
-      return { success: true, filePath };
-    }
-    return { success: false };
-  });
 }
 
 app.whenReady().then(createWindow);
+
+ipcMain.handle('save-html', async (event, { title, leftContent, rightContent, defaultFileName }) => {
+  try {
+    // 1. 读取模板
+    const templatePath = path.join(__dirname, 'src/utils/template.html');
+    let template = fs.readFileSync(templatePath, 'utf-8');
+    // 2. 变量插值
+    template = template.replace(/\$\{title\}/g, title || '雅思阅读');
+    template = template.replace(/\$\{leftContent\}/g, leftContent || '');
+    template = template.replace(/\$\{rightContent\}/g, rightContent || '');
+
+    // 3. 文件名优化：只保留英文、数字、下划线，去除特殊字符和空格
+    let safeName = defaultFileName || 'IELTS_Reading.html';
+    safeName = safeName.replace(/[^a-zA-Z0-9_\.]/g, '_');
+    if (!safeName.toLowerCase().endsWith('.html')) safeName += '.html';
+
+    // 4. 默认保存到 output 子文件夹
+    const outputDir = path.join(__dirname, 'output');
+    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
+    const defaultPath = path.join(outputDir, safeName);
+
+    // 5. 弹出保存窗口
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      title: '导出HTML',
+      defaultPath,
+      filters: [{ name: 'HTML文件', extensions: ['html'] }],
+    });
+    if (canceled || !filePath) {
+      // 失败时返回详细原因
+      let reason = canceled ? '用户取消保存窗口' : '未获得有效保存路径';
+      return { success: false, error: reason };
+    }
+    try {
+      fs.writeFileSync(filePath, template, 'utf-8');
+      return { success: true, filePath };
+    } catch (err) {
+      return { success: false, error: '写入文件失败: ' + err.message };
+    }
+  } catch (e) {
+    return { success: false, error: '主进程异常: ' + e.message };
+  }
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
