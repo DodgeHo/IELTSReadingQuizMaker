@@ -14,12 +14,12 @@ function QuestionPanel({ groups, setGroups }) {
       {groups.map((group, gi) => (
         <div key={group.id} style={{border:'1px solid #e5e7eb',borderRadius:'8px',padding:'12px',marginBottom:'18px',background:'#f9fafb'}}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-            <h3>Questions {group.questions.length>0 ? `${group.questions[0].id}–${group.questions[group.questions.length-1].id}` : ''}</h3>
+            <h4 >大题题干描述</h4>
             <button style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:'6px',padding:'4px 10px',marginLeft:'12px'}} onClick={()=>{
               if(window.confirm('确定要删除这个大题吗？')) {
                 setGroups(groups.filter((_,idx)=>idx!==gi));
               }
-            }}>删除大题</button>
+            }}>删除该大题</button>
           </div>
           <textarea value={group.instruction} onChange={e=>{
             const newGroups = [...groups];
@@ -179,7 +179,7 @@ function QuestionPanel({ groups, setGroups }) {
             setActiveGroup(nextId-1);
             setNewGroupInstruction('Choose the correct letter, A, B, C or D.');
             }}
-        >添加大题</button>
+        >添加新的大题</button>
       </div>
 
 
