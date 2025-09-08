@@ -136,6 +136,16 @@
     notes.innerHTML = `<header><span>Note</span><button id='btnClose'>关闭</button></header><textarea id='noteArea' placeholder='Your note...'></textarea>`;
     document.body.appendChild(notes);
     document.getElementById('btnNote').onclick = function() {
+      // 获取选中内容
+      let text = '';
+      if (lastRange) {
+        var frag = lastRange.cloneContents();
+        text = (frag.textContent || '').trim();
+      }
+      if (text) {
+        var noteArea = document.getElementById('noteArea');
+        noteArea.value = (noteArea.value ? noteArea.value + '\n' : '') + '> ' + text + '\n';
+      }
       notes.style.display = 'flex';
       selbar.style.display = 'none';
     };
