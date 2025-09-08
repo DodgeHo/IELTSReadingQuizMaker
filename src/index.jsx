@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 // 直接引入 ReadingExample.html 的样式（建议将 CSS 复制到 public/style.css 并在 index.html 引入）
 // 这里暂时内联样式，后续可优化为独立 CSS 文件
@@ -41,4 +41,5 @@ function App() {
   );
 }
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const root = createRoot(document.getElementById('root'));
+root.render(<App />);

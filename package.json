@@ -9,9 +9,9 @@
     "make": "electron-forge make"
   },
   "keywords": [],
-  "author": "",
+  "author": "道安澜",
   "license": "ISC",
-  "description": "",
+  "description": "IELTS 阅读题网页生成器",
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1",
     "react": "^19.1.1",
