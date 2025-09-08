@@ -1,0 +1,9 @@
+:root { --line:#e5e7eb; --bg:#f6f7fb; --panel:#fff; --accent:#3b82f6; --muted:#6b7280; --shadow:0 6px 20px rgba(0,0,0,.12); }
+* { box-sizing: border-box; }
+html,body { height:100%; }
+body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:var(--bg); }
+.shell { display:flex; height:100vh; width:100%; }
+.pane { background:var(--panel); overflow:auto; padding:20px; }
+#left { flex: 0 0 50%; min-width: 280px; }
+#right { flex: 1 1 auto; min-width: 320px; background:#fbfbff; border-left:1px solid var(--line); }
+#divider { flex: 0 0 8px; background: linear-gradient(90deg,#e5e7eb,#d1d5db); cursor: ew-resize; position:relative; z-index: 5; user-select:none; }
