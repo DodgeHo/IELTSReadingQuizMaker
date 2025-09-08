@@ -19,12 +19,12 @@ function App() {
       <div className="shell">
         <section className="pane" id="left">
           <div style={{marginBottom:'10px'}}>
-            <label style={{fontWeight:'bold',fontSize:'16px'}}>试卷标题：</label>
+            <label style={{fontWeight:'bold',fontSize:'16px'}}>文章标题：</label>
             <input
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="请输入试卷标题..."
+              placeholder="请输入文章标题..."
               style={{width:'70%',fontSize:'16px',marginLeft:'10px',padding:'6px'}}
             />
           </div>
