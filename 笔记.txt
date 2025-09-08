@@ -8,6 +8,8 @@
 导出安装版本： 
   npm run make
 
+
+node v22 react 18
 DodgeHo: Please help me build an IELTS Mock Test software. I understand this is a big project, so I am willing to build it from the very beginning. To elaborate: 1. You don't have to build the whole software, first you can just have the Reading test part. And specifically for matching questions, you don't have to do the draging function, you can use choices instead. 2. The outcome can be a HTML file, but not necessary. I will give you an example as the attachment. It should be able to score/grade and then revise it when students finish doing. 3. It should both work on Windows and Mac ideally. If not, Windows first. 4. You can search the Internet, especially Github, if you can find a similar open-source codes, you can show me, instead of coming up if your own idea. 5. If you decided to build it yourself, firtsly show me your whole stucture and framework. No harsh into coding, I will decide next step.
 
 GitHub Copilot: 非常感谢你的详细说明！你的需求很清晰，以下是我的理解和建议：

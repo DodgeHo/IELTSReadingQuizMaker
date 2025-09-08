@@ -7,12 +7,8 @@ import './style.css';
 function App() {
   const [title, setTitle] = useState('');
   const [readingText, setReadingText] = useState('');
-  const [questions, setQuestions] = useState([
-    { id: 1, type: 'single', text: 'Soccer is played in the street and in youth teams. Which is more organized?', options: ['Street', 'Youth team'], answer: 1 }
-  ]);
-  const [newQText, setNewQText] = useState('');
-  const [newQOptions, setNewQOptions] = useState('');
-  const [newQAnswer, setNewQAnswer] = useState('0');
+  // 顶层题目分组状态
+  const [groups, setGroups] = useState([]);
 
   return (
     <div className="shell">
@@ -24,17 +20,11 @@ function App() {
       />
       <div id="divider" title="Drag to resize"></div>
       <QuestionPanel
-        questions={questions}
-        setQuestions={setQuestions}
-        newQText={newQText}
-        setNewQText={setNewQText}
-        newQOptions={newQOptions}
-        setNewQOptions={setNewQOptions}
-        newQAnswer={newQAnswer}
-        setNewQAnswer={setNewQAnswer}
+        groups={groups}
+        setGroups={setGroups}
       />
       <div style={{position:'fixed',right:32,bottom:32,zIndex:1000}}>
-        <ExportButton title={title} readingText={readingText} questions={questions} />
+        <ExportButton title={title} readingText={readingText} groups={groups} />
       </div>
     </div>
   );
