@@ -11,31 +11,6 @@ function QuestionPanel({ groups, setGroups }) {
     <section className="pane" id="right">
       <label style={{fontWeight:'bold',fontSize:'16px'}}>题目编辑：</label>
 
-      <div style={{border:'1px solid #e5e7eb',borderRadius:'8px',padding:'12px',marginBottom:'18px',background:'#f9fafb'}}>
-        <div style={{marginBottom:'16px'}}>
-            <label>题型：</label>
-            <select value={newGroupType} onChange={e=>setNewGroupType(e.target.value)}>
-            <option value="single">单选题</option>
-            </select>
-            <textarea placeholder="小要求/说明" value={newGroupInstruction} onChange={e=>setNewGroupInstruction(e.target.value)} style={{marginLeft:'8px',width:'60%',height:'40px',verticalAlign:'middle',fontSize:'15px'}}/>
-        </div>
-        <button style={{marginBottom:'12px',padding:'8px 16px',background:'#10b981',color:'#fff',border:'none',borderRadius:'8px'}}
-            onClick={() => {
-            const nextId = groups.length+1;
-            setGroups([...groups, {
-                id: nextId,
-                type: newGroupType,
-                instruction: newGroupInstruction,
-                questions: [],
-                _newQText: '',
-                _newQOptions: ['',''],
-                _newQAnswer: 0
-            }]);
-            setActiveGroup(nextId-1);
-            setNewGroupInstruction('Choose the correct letter, A, B, C or D.');
-            }}
-        >添加大题</button>
-      </div>
       {groups.map((group, gi) => (
         <div key={group.id} style={{border:'1px solid #e5e7eb',borderRadius:'8px',padding:'12px',marginBottom:'18px',background:'#f9fafb'}}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
@@ -116,7 +91,7 @@ function QuestionPanel({ groups, setGroups }) {
               </li>
             ))}
           </ol>
-          <div style={{marginTop:'8px',borderTop:'1px dashed #e5e7eb',paddingTop:'8px'}}>
+          <div style={{marginTop:'8px',borderTop:'1px dashed #e5e7eb',paddingTop:'8px', background:'#b3c8f3ff', borderRadius:'6px'}}>
             <h4>添加小题</h4>
             <textarea
               placeholder="题干内容"
@@ -173,11 +148,41 @@ function QuestionPanel({ groups, setGroups }) {
                 newGroups[gi]._newQAnswer = 0;
                 setGroups(newGroups);
               }}
-              style={{padding:'8px 16px',background:'#3b82f6',color:'#fff',border:'none',borderRadius:'8px',marginBottom:'12px'}}
-            >添加小题</button>
+              style={{padding:'8px 16px',background:'#14745cff',color:'#fff',border:'none',borderRadius:'8px',marginBottom:'12px'}}
+            >添加该小题</button>
           </div>
         </div>
       ))}
+
+      <div style={{border:'1px solid #e5e7eb',borderRadius:'8px',padding:'12px',marginBottom:'18px',background:'rgba(220, 239, 255, 1)ff'}}>
+        <div style={{marginBottom:'16px'}}>
+            <label>题型：</label>
+            <select value={newGroupType} onChange={e=>setNewGroupType(e.target.value)}>
+                <option value="single">单选题（四个选项）</option>
+            </select>
+            <br />
+            <label>题干要求/说明：</label>
+            <textarea placeholder="题干要求/说明" value={newGroupInstruction} onChange={e=>setNewGroupInstruction(e.target.value)} style={{marginLeft:'8px',width:'60%',height:'40px',verticalAlign:'middle',fontSize:'15px'}}/>
+        </div>
+        <button style={{marginBottom:'12px',padding:'8px 16px',background:'#10b981',color:'#fff',border:'none',borderRadius:'8px'}}
+            onClick={() => {
+            const nextId = groups.length+1;
+            setGroups([...groups, {
+                id: nextId,
+                type: newGroupType,
+                instruction: newGroupInstruction,
+                questions: [],
+                _newQText: '',
+                _newQOptions: ['','','',''],
+                _newQAnswer: 0
+            }]);
+            setActiveGroup(nextId-1);
+            setNewGroupInstruction('Choose the correct letter, A, B, C or D.');
+            }}
+        >添加大题</button>
+      </div>
+
+
     </section>
   );
 }
