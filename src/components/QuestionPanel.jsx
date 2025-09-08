@@ -30,7 +30,7 @@ function QuestionPanel({ groups, setGroups }) {
             {group.questions.map((q, qi) => (
               <li key={q.id} style={{marginBottom: '14px',borderBottom:'1px dashed #e5e7eb',paddingBottom:'8px'}}>
                 <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                  <b>Q{q.id}:</b>
+                  <b>Q{q.id}.</b>
                   <button style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:'6px',padding:'2px 8px',marginLeft:'12px'}} onClick={()=>{
                     if(window.confirm('确定要删除这个小题吗？')) {
                       const newGroups = [...groups];
@@ -135,7 +135,14 @@ function QuestionPanel({ groups, setGroups }) {
               onClick={() => {
                 const newGroups = [...groups];
                 const opts = (newGroups[gi]._newQOptions || []).filter(s=>s.trim());
-                if(!newGroups[gi]._newQText || !opts.length) return;
+                if(!newGroups[gi]._newQText) {
+                  window.alert('请填写题干内容！');
+                  return;
+                }
+                if(!opts.length) {
+                  window.alert('请至少填写一个选项！');
+                  return;
+                }
                 const nextQid = newGroups[gi].questions.length>0 ? newGroups[gi].questions[newGroups[gi].questions.length-1].id+1 : 1;
                 newGroups[gi].questions.push({
                   id: nextQid,
@@ -156,13 +163,10 @@ function QuestionPanel({ groups, setGroups }) {
 
       <div style={{border:'1px solid #e5e7eb',borderRadius:'8px',padding:'12px',marginBottom:'18px',background:'rgba(220, 239, 255, 1)ff'}}>
         <div style={{marginBottom:'16px'}}>
-            <label>题型：</label>
-            <select value={newGroupType} onChange={e=>setNewGroupType(e.target.value)}>
-                <option value="single">单选题（四个选项）</option>
-            </select>
-            <br />
-            <label>题干要求/说明：</label>
-            <textarea placeholder="题干要求/说明" value={newGroupInstruction} onChange={e=>setNewGroupInstruction(e.target.value)} style={{marginLeft:'8px',width:'60%',height:'40px',verticalAlign:'middle',fontSize:'15px'}}/>
+      <label>题型：</label>
+      <select value={newGroupType} onChange={e=>setNewGroupType(e.target.value)}>
+        <option value="single">单选题（四个选项）</option>
+      </select>
         </div>
         <button style={{marginBottom:'12px',padding:'8px 16px',background:'#10b981',color:'#fff',border:'none',borderRadius:'8px'}}
             onClick={() => {

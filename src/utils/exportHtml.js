@@ -1,14 +1,31 @@
 function renderQuestions(questions) {
-  return `<h2>题目</h2><ol>${questions.map(q => {
-    let opts = '';
-    let instruction = q.instruction ? `<div style='color:#64748b;margin-bottom:6px'>${q.instruction}</div>` : '';
-    if(q.type === 'single') {
-      opts = '<div>' + q.options.map((opt, idx) => {
-        return `<label style='display:block;margin:4px 0'><input type='radio' name='q${q.id}'/> ${opt}${q.answer === idx ? "<span style='color:#3b82f6;margin-left:8px'>(正确答案)</span>" : ''}</label>`;
-      }).join('') + '</div>';
+  // 分组拆分，按instruction分组
+  let html = '<h2>题目</h2>';
+  let currentInstruction = null;
+  let groupQuestions = [];
+  questions.forEach((q, idx) => {
+    if(q.instruction && q.instruction.trim()) {
+      // 输出上一组
+      if(groupQuestions.length) {
+        html += `<ol>${groupQuestions.join('')}</ol>`;
+        groupQuestions = [];
+      }
+      html += `<div style='color:#64748b;font-size:16px;font-weight:bold;margin:18px 0 10px 0'>${q.instruction}</div>`;
+      currentInstruction = q.instruction;
     }
-    return `<li>${instruction}<div><b>Q${q.id}:</b> ${q.text}</div>${opts}</li>`;
-  }).join('')}</ol>`;
+    let opts = '';
+    if(q.type === 'single' && Array.isArray(q.options)) {
+      opts = `<ul style='list-style:none;padding-left:0;margin:8px 0 0 0;'>` + q.options.map((opt, oi) => {
+        const letter = String.fromCharCode(65+oi);
+        return `<li style='margin-bottom:6px'><label style='display:flex;align-items:center;font-size:15px;'><span style='font-weight:bold;margin-right:8px'>${letter}.</span> <span>${opt}</span>${q.answer === oi ? "<span style='color:#3b82f6;margin-left:8px'>(正确答案)</span>" : ''}</label></li>`;
+      }).join('') + '</ul>';
+    }
+    groupQuestions.push(`<li style='margin-bottom:18px'><div style='font-size:16px;margin-bottom:6px'>${q.text}</div>${opts}</li>`);
+  });
+  if(groupQuestions.length) {
+    html += `<ol>${groupQuestions.join('')}</ol>`;
+  }
+  return html;
 }
 
 export async function exportHtml({ title, readingText, questions }) {
