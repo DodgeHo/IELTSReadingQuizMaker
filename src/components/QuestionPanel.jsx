@@ -107,43 +107,30 @@ function QuestionPanel({ groups, setGroups }) {
                 setGroups(newGroups);
               }}
             />
-            <div style={{marginBottom:'8px'}}>
-              <span style={{fontWeight:'bold'}}>选项：</span>
-              {(group._newQOptions || []).map((opt, oi) => (
-                <div key={oi} style={{display:'flex',alignItems:'center',marginBottom:'4px'}}>
-                  <input type="radio" name={`newans_${group.id}`} checked={group._newQAnswer===oi} onChange={()=>{
-                    const newGroups = [...groups];
-                    newGroups[gi]._newQAnswer = oi;
-                    setGroups(newGroups);
-                  }}/>
-                  <label>{opt}</label>
-                </div>
-              ))}
-            </div>
             <button
               onClick={() => {
                 const newGroups = [...groups];
-                const opts = [...newGroups[gi]._newQOptions];
                 if(!newGroups[gi]._newQText) {
                   window.alert('请填写题干内容！');
                   return;
                 }
-                const nextQid = newGroups[gi].questions.length>0 ? newGroups[gi].questions[newGroups[gi].questions.length-1].id+1 : 1;
+                const nextQid = newGroups[gi].questions && newGroups[gi].questions.length>0 ? newGroups[gi].questions[newGroups[gi].questions.length-1].id+1 : 1;
+                let options = [];
+                if(newGroups[gi].type==='single') options = ['','','',''];
+                if(newGroups[gi].type==='tf') options = ['TRUE','FALSE','NOT GIVEN'];
+                if(newGroups[gi].type==='yn') options = ['YES','NO','NOT GIVEN'];
                 newGroups[gi].questions.push({
                   id: nextQid,
                   text: newGroups[gi]._newQText,
-                  options: opts,
-                  answer: typeof newGroups[gi]._newQAnswer==='number' ? newGroups[gi]._newQAnswer : 0
+                  options,
+                  answer: 0
                 });
                 newGroups[gi]._newQText = '';
-                if(newGroups[gi].type==='single') newGroups[gi]._newQOptions = ['','','',''];
-                if(newGroups[gi].type==='tf') newGroups[gi]._newQOptions = ['TRUE','FALSE','NOT GIVEN'];
-                if(newGroups[gi].type==='yn') newGroups[gi]._newQOptions = ['YES','NO','NOT GIVEN'];
-                newGroups[gi]._newQAnswer = 0;
                 setGroups(newGroups);
               }}
               style={{padding:'8px 16px',background:'#14745cff',color:'#fff',border:'none',borderRadius:'8px',marginBottom:'12px'}}
             >添加该小题</button>
+
           </div>
         </div>
       ))}
