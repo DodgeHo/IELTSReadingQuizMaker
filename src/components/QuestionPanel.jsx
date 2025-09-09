@@ -30,7 +30,6 @@ function QuestionPanel({ groups, setGroups }) {
             {group.questions.map((q, qi) => (
               <li key={q.id} style={{marginBottom: '14px',borderBottom:'1px dashed #e5e7eb',paddingBottom:'8px'}}>
                 <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                  <b>Q{q.id}.</b>
                   <button style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:'6px',padding:'2px 8px',marginLeft:'12px'}} onClick={()=>{
                     if(window.confirm('确定要删除这个小题吗？')) {
                       const newGroups = [...groups];
@@ -112,6 +111,7 @@ function QuestionPanel({ groups, setGroups }) {
                     newGroups[gi]._newQAnswer = oi;
                     setGroups(newGroups);
                   }}/>
+                  <label>{String.fromCharCode(65+oi)}.</label>
                   <textarea value={opt} onChange={e=>{
                     const newGroups = [...groups];
                     newGroups[gi]._newQOptions[oi] = e.target.value;
@@ -126,7 +126,7 @@ function QuestionPanel({ groups, setGroups }) {
               ))}
               <button style={{background:'#3b82f6',color:'#fff',border:'none',borderRadius:'6px',padding:'2px 10px',marginTop:'4px'}} onClick={()=>{
                 const newGroups = [...groups];
-                if(!newGroups[gi]._newQOptions) newGroups[gi]._newQOptions = ['',''];
+                if(!newGroups[gi]._newQOptions) newGroups[gi]._newQOptions = ['','','',''],
                 newGroups[gi]._newQOptions.push('');
                 setGroups(newGroups);
               }}>添加选项</button>
@@ -151,7 +151,7 @@ function QuestionPanel({ groups, setGroups }) {
                   answer: typeof newGroups[gi]._newQAnswer==='number' ? newGroups[gi]._newQAnswer : 0
                 });
                 newGroups[gi]._newQText = '';
-                newGroups[gi]._newQOptions = ['',''];
+                newGroups[gi]._newQOptions = ['','','',''],
                 newGroups[gi]._newQAnswer = 0;
                 setGroups(newGroups);
               }}
