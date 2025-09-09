@@ -4,6 +4,7 @@ function renderQuestions(questions) {
   let groupQuestions = [];
   let groupCount = 0;
   let pendingInstruction = '';
+  let globalIndex = 1;
   questions.forEach((q, idx) => {
     if(q.instruction && q.instruction.trim()) {
       // 输出上一组（把分组说明和题目一起包裹）
@@ -12,8 +13,9 @@ function renderQuestions(questions) {
         if(pendingInstruction) {
           html += `<div style='color:#64748b;font-size:16px;font-weight:bold;margin-bottom:10px'>${pendingInstruction}</div>`;
         }
-        html += `<ol>${groupQuestions.join('')}</ol>`;
+        html += `<ol start='${globalIndex}'>${groupQuestions.join('')}</ol>`;
         html += `</div>`;
+        globalIndex += groupQuestions.length;
         groupQuestions = [];
         pendingInstruction = '';
       }
@@ -48,8 +50,9 @@ function renderQuestions(questions) {
     if(pendingInstruction) {
       html += `<div style='color:#64748b;font-size:16px;font-weight:bold;margin-bottom:10px'>${pendingInstruction}</div>`;
     }
-    html += `<ol>${groupQuestions.join('')}</ol>`;
+    html += `<ol start='${globalIndex}'>${groupQuestions.join('')}</ol>`;
     html += `</div>`;
+    globalIndex += groupQuestions.length;
   }
   return html;
 }
