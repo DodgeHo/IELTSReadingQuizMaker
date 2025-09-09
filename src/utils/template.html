@@ -33,7 +33,17 @@
   <div class="shell">
     <section class="pane" id="left">${leftContent}</section>
     <div id="divider"></div>
-    <section class="pane" id="right">${rightContent}</section>
+    <section class="pane" id="right">${rightContent}
+      <div id="answer-summary" style="margin-top:32px;padding:16px 12px;border-top:1px solid #e5e7eb;background:#f6f7fb;border-radius:8px;">
+        <h4>已完成题目：</h4>
+        <div id="completed-list" style="font-size:15px;color:#3b82f6;"></div>
+        <div style="margin-top:18px;">
+          <button id="btnSubmit" style="background:#10b981;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);cursor:pointer;margin-right:12px;">交卷批改</button>
+          <button id="btnReset" style="background:#64748b;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);cursor:pointer;">重置答题</button>
+        </div>
+        <div id="score-result" style="margin-top:18px;font-size:17px;font-weight:bold;color:#eab308;"></div>
+      </div>
+    </section>
   </div>
   <script>
     // 顶部计时器
@@ -44,114 +54,71 @@
       var s=String(_t%60).padStart(2,'0'); 
       _timerEl.textContent=m+':'+s; 
     },1000);
-    // Hightlight/Note工具栏
-    var selbar = document.createElement('div');
-    selbar.id = 'selbar';
-    selbar.innerHTML = `
-      <button id='btnHL'>Hightlight</button>
-      <button id='btnUH'>Remove</button>
-      <button id='btnNote'>Note</button>
-    `;
-    document.body.appendChild(selbar);
-    var lastRange = null;
-    function getSelectionRect() {
-      var sel = window.getSelection();
-      if (!sel.rangeCount) return null;
-      var range = sel.getRangeAt(0);
-      var rect = range.getBoundingClientRect();
-      return rect;
-    }
-    function updateSelbar() {
-      var sel = window.getSelection();
-      if (!sel.isCollapsed && sel.toString().length > 0) {
-        var rect = getSelectionRect();
-        if (rect) {
-          selbar.style.display = 'flex';
-          selbar.style.left = rect.left + window.scrollX + 'px';
-          selbar.style.top = (rect.bottom + window.scrollY + 5) + 'px';
-          lastRange = sel.getRangeAt(0).cloneRange();
+
+    // 答题统计与批改功能
+    function getAllQuestions() {
+      const qBlocks = document.querySelectorAll('#right ol > li');
+      let questions = [];
+      qBlocks.forEach((li, idx) => {
+        const radios = li.querySelectorAll('input[type=radio]');
+        if(radios.length) {
+          questions.push({
+            el: li,
+            radios,
+            idx,
+            selected: null,
+            correct: null
+          });
         }
-      } else {
-        selbar.style.display = 'none';
-      }
+      });
+      return questions;
     }
-    document.getElementById('left').addEventListener('mouseup', updateSelbar);
-    document.getElementById('left').addEventListener('keyup', updateSelbar);
-    selbar.addEventListener('mousedown', function(e){ e.preventDefault(); });
-    function doHighlight() {
-      if (lastRange) {
-        var span = document.createElement('span');
-        span.className = 'hl';
-        lastRange.surroundContents(span);
-        window.getSelection().removeAllRanges();
-        selbar.style.display = 'none';
-      }
+    function updateCompletedList() {
+      const questions = getAllQuestions();
+      let html = '';
+      questions.forEach((q, i) => {
+        let sel = Array.from(q.radios).find(r=>r.checked);
+        html += `<span style='margin-right:12px;'>Q${i+1}: ` + (sel ? `<b style='color:#10b981'>${sel.value}</b>` : `<span style='color:#64748b'>未选</span>`) + '</span>';
+      });
+      document.getElementById('completed-list').innerHTML = html;
     }
-    function removeHighlight() {
-      if (lastRange) {
-        var sel = window.getSelection();
-        var range = lastRange;
-        var container = range.commonAncestorContainer;
-          var parent = container.nodeType === 3 ? container.parentNode : container;
-          if (parent.classList && parent.classList.contains('hl')) {
-            var text = parent.textContent;
-            var newNode = document.createTextNode(text);
-            parent.parentNode.replaceChild(newNode, parent);
-            selbar.style.display = 'none';
-            sel.removeAllRanges();
-          }
-      }
-        if (!lastRange) return;
-        // 支持框选范围覆盖多个高亮区域时批量取消高亮
-        var selRect = lastRange.getBoundingClientRect();
-        var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
-        var toRemove = [];
-        while (walker.nextNode()) {
-          var n = walker.currentNode;
-          if (n.classList && n.classList.contains('hl')) {
-            var r = n.getBoundingClientRect();
-            // 只要有交集就移除（即使框选比高亮大）
-            if (!(r.right < selRect.left || r.left > selRect.right || r.bottom < selRect.top || r.top > selRect.bottom)) toRemove.push(n);
-          }
-        }
-        if (toRemove.length === 0) {
-          selbar.style.display = 'none';
-          //showToast('No highlight found');
-          return;
-        }
-        toRemove.forEach(function(el) {
-          var p = el.parentNode;
-          while (el.firstChild) p.insertBefore(el.firstChild, el);
-          p.removeChild(el);
-          p.normalize();
+    document.getElementById('right').addEventListener('change', function(e){
+      if(e.target.type==='radio') updateCompletedList();
+    });
+    updateCompletedList();
+
+    // 交卷批改功能
+    document.getElementById('btnSubmit').onclick = function() {
+      const questions = getAllQuestions();
+      let correctCount = 0;
+      let total = questions.length;
+      questions.forEach((q, i) => {
+        // 正确答案存储在data-answer属性（后续可由后端/模板注入）
+        let answer = null;
+        q.radios.forEach(r => {
+          if(r.dataset.answer==='true') answer = r.value;
         });
-        selbar.style.display = 'none';
-        showToast('Highlight removed');
-    }
-    document.getElementById('btnHL').onclick = doHighlight;
-    document.getElementById('btnUH').onclick = removeHighlight;
-    // Note功能
-    var notes = document.createElement('div');
-    notes.id = 'notes';
-    notes.innerHTML = `<header><span>Note</span><button id='btnClose'>关闭</button></header><textarea id='noteArea' placeholder='Your note...'></textarea>`;
-    document.body.appendChild(notes);
-    document.getElementById('btnNote').onclick = function() {
-      // 获取选中内容
-      let text = '';
-      if (lastRange) {
-        var frag = lastRange.cloneContents();
-        text = (frag.textContent || '').trim();
-      }
-      if (text) {
-        var noteArea = document.getElementById('noteArea');
-        noteArea.value = (noteArea.value ? noteArea.value + '\n' : '') + '> ' + text + '\n';
-      }
-      notes.style.display = 'flex';
-      selbar.style.display = 'none';
+        let sel = Array.from(q.radios).find(r=>r.checked);
+        if(sel && answer && sel.value===answer) {
+          correctCount++;
+          q.el.style.background = '#e6ffed';
+        } else {
+          q.el.style.background = sel ? '#ffe4e6' : '';
+        }
+      });
+      document.getElementById('score-result').textContent = `得分：${correctCount} / ${total}`;
     };
-    document.getElementById('btnClose').onclick = function() {
-      notes.style.display = 'none';
+    // 重置答题
+    document.getElementById('btnReset').onclick = function() {
+      const questions = getAllQuestions();
+      questions.forEach(q => {
+        q.radios.forEach(r => r.checked=false);
+        q.el.style.background = '';
+      });
+      document.getElementById('score-result').textContent = '';
+      updateCompletedList();
     };
+  // ...existing code...
   </script>
 </body>
 </html>

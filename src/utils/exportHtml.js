@@ -47,7 +47,8 @@ function renderQuestions(questions) {
 
 export async function exportHtml({ title, readingText, questions }) {
   const leftContent = `<h2>${title || '阅读材料'}</h2><div>${readingText}</div>`;
-  const rightContent = '<h4>Questions</h4>' + renderQuestions(questions);
+  let rightContent = '<h4>Questions</h4>';
+  rightContent += renderQuestions(questions);
 
   let ipcRenderer;
   try {
