@@ -45,7 +45,41 @@
       </div>
     </section>
   </div>
+  <div class="practice-nav" id="practice-nav" style="background:#fff;border-top:2px solid #e5e7eb;padding:12px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 2px 4px rgba(0,0,0,.05);flex-wrap:wrap;position:fixed;left:0;right:0;bottom:0;z-index:4000;">
+    <span class="title" style="font-weight:600;color:#64748b;">题号：</span>
+    <div class="questions" id="nav-questions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"></div>
+  </div>
   <script>
+    // 题号导航条逻辑
+    function updateNavQuestions() {
+      const questions = getAllQuestions();
+      const nav = document.getElementById('nav-questions');
+      nav.innerHTML = '';
+      questions.forEach((q, i) => {
+        let sel = Array.from(q.radios).find(r=>r.checked);
+        const btn = document.createElement('button');
+        btn.textContent = i+1;
+        btn.style.background = sel ? '#10b981' : '#e5e7eb';
+        btn.style.color = sel ? '#fff' : '#64748b';
+        btn.style.border = 'none';
+        btn.style.borderRadius = '8px';
+        btn.style.padding = '6px 12px';
+        btn.style.fontWeight = 'bold';
+        btn.style.fontSize = '15px';
+        btn.style.cursor = 'pointer';
+        btn.onclick = function() {
+          q.el.scrollIntoView({behavior:'smooth',block:'center'});
+        };
+        nav.appendChild(btn);
+      });
+    }
+    document.getElementById('right').addEventListener('change', function(e){
+      if(e.target.type==='radio') {
+        updateCompletedList();
+        updateNavQuestions();
+      }
+    });
+    updateNavQuestions();
     // 顶部计时器
     let _t=0; const _timerEl=document.getElementById('top-timer');
     setInterval(function(){ 
