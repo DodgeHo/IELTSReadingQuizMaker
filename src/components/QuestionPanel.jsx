@@ -76,7 +76,7 @@ function QuestionPanel({ groups, setGroups }) {
                           newGroups[gi].questions[qi].options[oi] = e.target.value;
                           setGroups(newGroups);
                         }} style={{width:'70%',height:'32px',marginLeft:'8px',fontSize:'15px',resize:'vertical'}} placeholder={`选项${String.fromCharCode(65+oi)}`}/>
-                        <button style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:'6px',padding:'2px 8px',marginLeft:'8px'}} onClick={()=>{
+                        <button style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:'6px',padding:'2px 8px',marginLeft:'8px'}} disabled={q.options.length<=2} onClick={()=>{
                           const newGroups = [...groups];
                           newGroups[gi].questions[qi].options = newGroups[gi].questions[qi].options.filter((_,idx)=>idx!==oi);
                           // 如果删除的是正确答案，重置answer
@@ -90,6 +90,34 @@ function QuestionPanel({ groups, setGroups }) {
                       newGroups[gi].questions[qi].options.push('');
                       setGroups(newGroups);
                     }}>添加选项</button>
+                  </div>
+                )}
+                {group.type === 'tf' && (
+                  <div style={{marginLeft:'12px'}}>
+                    {q.options.map((opt, oi) => (
+                      <div key={oi} style={{display:'flex',alignItems:'center',marginBottom:'4px'}}>
+                        <input type="radio" name={`ans_${group.id}_${q.id}`} checked={q.answer===oi} onChange={()=>{
+                          const newGroups = [...groups];
+                          newGroups[gi].questions[qi].answer = oi;
+                          setGroups(newGroups);
+                        }}/>
+                        <span style={{marginLeft:'8px',fontWeight:'bold'}}>{opt}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {group.type === 'yn' && (
+                  <div style={{marginLeft:'12px'}}>
+                    {q.options.map((opt, oi) => (
+                      <div key={oi} style={{display:'flex',alignItems:'center',marginBottom:'4px'}}>
+                        <input type="radio" name={`ans_${group.id}_${q.id}`} checked={q.answer===oi} onChange={()=>{
+                          const newGroups = [...groups];
+                          newGroups[gi].questions[qi].answer = oi;
+                          setGroups(newGroups);
+                        }}/>
+                        <span style={{marginLeft:'8px',fontWeight:'bold'}}>{opt}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
               </li>
