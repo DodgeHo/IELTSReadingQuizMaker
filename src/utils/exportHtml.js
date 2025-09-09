@@ -86,13 +86,25 @@ export async function exportHtml({ title, readingText, questions }) {
       defaultFileName: fileName,
     });
     if (result.success) {
-      alert('导出成功！文件已保存到：' + result.filePath);
+      if (window.showToast) {
+        window.showToast('导出成功！文件已保存到：' + result.filePath);
+      } else {
+        alert('导出成功！文件已保存到：' + result.filePath);
+      }
     } else {
       let msg = '导出已取消。';
       if (result.error) msg += '\n原因：' + result.error;
-      alert(msg);
+      if (window.showToast) {
+        window.showToast(msg);
+      } else {
+        alert(msg);
+      }
     }
   } else {
-    alert('当前环境不支持本地保存（请在Electron应用中使用）。');
+    if (window.showToast) {
+      window.showToast('当前环境不支持本地保存（请在Electron应用中使用）。');
+    } else {
+      alert('当前环境不支持本地保存（请在Electron应用中使用）。');
+    }
   }
 }

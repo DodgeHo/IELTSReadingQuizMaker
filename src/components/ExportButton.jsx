@@ -29,7 +29,7 @@ function ExportButton({ title, readingText, questions, groups }) {
   return (
     <button
       style={{
-        background: '#10b98185',
+        background: '#10b981',
         color: '#fff',
         border: 'none',
         borderRadius: '12px',
@@ -40,7 +40,7 @@ function ExportButton({ title, readingText, questions, groups }) {
       }}
       onClick={handleExport}
       onMouseOver={e => e.currentTarget.style.background = '#10b981'}
-      onMouseOut={e => e.currentTarget.style.background = '#10b98185'}
+      onMouseOut={e => e.currentTarget.style.background = '#10b981'}
     >导出HTML</button>
   );
 }

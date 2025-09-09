@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function QuestionPanel({ groups, setGroups }) {
+function QuestionPanel({ groups, setGroups, showToast }) {
   // 新建大题相关
   const typeInstructions = {
     single: 'Choose the correct letter, A, B, C or D.',
@@ -139,7 +139,7 @@ function QuestionPanel({ groups, setGroups }) {
               onClick={() => {
                 const newGroups = [...groups];
                 if(!newGroups[gi]._newQText) {
-                  window.alert('请填写题干内容！');
+                  if (showToast) showToast('请填写题干内容！');
                   return;
                 }
                 const nextQid = newGroups[gi].questions && newGroups[gi].questions.length>0 ? newGroups[gi].questions[newGroups[gi].questions.length-1].id+1 : 1;
