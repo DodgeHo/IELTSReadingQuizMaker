@@ -103,7 +103,7 @@ function QuestionPanel({ groups, setGroups }) {
               }}
             />
             <div style={{marginBottom:'8px'}}>
-              <span style={{fontWeight:'bold'}}>选项：</span>
+              <span style={{fontWeight:'bold'}}>正确选项：</span>
               {(group._newQOptions || ['','']).map((opt, oi) => (
                 <div key={oi} style={{display:'flex',alignItems:'center',marginBottom:'4px'}}>
                   <input type="radio" name={`newans_${group.id}`} checked={group._newQAnswer===oi} onChange={()=>{

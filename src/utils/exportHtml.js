@@ -24,14 +24,22 @@ function renderQuestions(questions) {
     // 跳过无题干的题目
     if(!q.text || !q.text.trim()) return;
     let opts = '';
-    if(q.type === 'single' && Array.isArray(q.options)) {
-      // 选项渲染为radio可选
+    if (Array.isArray(q.options)) {
       const name = `group${groupCount}_q${q.id}`;
-      opts = `<ul style='list-style:none;padding-left:0;margin:8px 0 0 0;'>` + q.options.map((opt, oi) => {
-        const letter = String.fromCharCode(65+oi);
-        const isCorrect = q.answer === oi ? " data-answer='true'" : '';
-        return `<li style='margin-bottom:6px'><label style='display:flex;align-items:center;font-size:15px;'><input type='radio' name='${name}' value='${letter}' style='margin-right:8px'${isCorrect}/> <span style='font-weight:bold;margin-right:8px'>${letter}.</span> <span>${opt}</span></label></li>`;
-      }).join('') + '</ul>';
+      if (q.type === 'single') {
+        // 单选题显示A/B/C/D
+        opts = `<ul style='list-style:none;padding-left:0;margin:8px 0 0 0;'>` + q.options.map((opt, oi) => {
+          const letter = String.fromCharCode(65+oi);
+          const isCorrect = q.answer === oi ? " data-answer='true'" : '';
+          return `<li style='margin-bottom:6px'><label style='display:flex;align-items:center;font-size:15px;'><input type='radio' name='${name}' value='${letter}' style='margin-right:8px'${isCorrect}/> <span style='font-weight:bold;margin-right:8px'>${letter}.</span> <span>${opt}</span></label></li>`;
+        }).join('') + '</ul>';
+      } else {
+        // 其他题型不显示选项号
+        opts = `<ul style='list-style:none;padding-left:0;margin:8px 0 0 0;'>` + q.options.map((opt, oi) => {
+          const isCorrect = q.answer === oi ? " data-answer='true'" : '';
+          return `<li style='margin-bottom:6px'><label style='display:flex;align-items:center;font-size:15px;'><input type='radio' name='${name}' value='${opt}' style='margin-right:8px'${isCorrect}/> <span>${opt}</span></label></li>`;
+        }).join('') + '</ul>';
+      }
     }
     groupQuestions.push(`<li style='margin-bottom:18px'><div style='font-size:16px;margin-bottom:6px'>${q.text}</div>${opts}</li>`);
   });
