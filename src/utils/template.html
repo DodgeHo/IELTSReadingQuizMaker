@@ -34,19 +34,18 @@
     <section class="pane" id="left">${leftContent}</section>
     <div id="divider"></div>
     <section class="pane" id="right">${rightContent}
-      <div id="answer-summary" style="margin-top:32px;padding:16px 12px;border-top:1px solid #e5e7eb;background:#f6f7fb;border-radius:8px;">
-        <h4>已完成题目：</h4>
-        <div id="completed-list" style="font-size:15px;color:#3b82f6;"></div>
+      <div id="answer-summary" style="margin-top:12px;padding:16px 12px;border-top:1px solid #e5e7eb;background:#f6f7fb;border-radius:8px;">
+        <div id="completed-list" style="font-size:15px;color:#3b82f6;display:none;"></div>
         <div style="margin-top:18px;">
-          <button id="btnSubmit" style="background:#10b981;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);cursor:pointer;margin-right:12px;">交卷批改</button>
-          <button id="btnReset" style="background:#64748b;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);cursor:pointer;">重置答题</button>
+          <button id="btnSubmit" style="background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);cursor:pointer;margin-right:12px;">Submit</button>
+          <button id="btnReset" style="background:#64748b;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);cursor:pointer;">Reset</button>
         </div>
         <div id="score-result" style="margin-top:18px;font-size:17px;font-weight:bold;color:#eab308;"></div>
       </div>
     </section>
   </div>
   <div class="practice-nav" id="practice-nav" style="background:#fff;border-top:2px solid #e5e7eb;padding:12px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 2px 4px rgba(0,0,0,.05);flex-wrap:wrap;position:fixed;left:0;right:0;bottom:0;z-index:4000;">
-    <span class="title" style="font-weight:600;color:#64748b;">题号：</span>
+    <span class="title" style="font-weight:600;color:#64748b;">Questions</span>
     <div class="questions" id="nav-questions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"></div>
   </div>
   <script>
@@ -59,7 +58,7 @@
         let sel = Array.from(q.radios).find(r=>r.checked);
         const btn = document.createElement('button');
         btn.textContent = i+1;
-        btn.style.background = sel ? '#10b981' : '#e5e7eb';
+        btn.style.background = sel ? '#3b82f6' : '#e5e7eb';
         btn.style.color = sel ? '#fff' : '#64748b';
         btn.style.border = 'none';
         btn.style.borderRadius = '8px';
@@ -108,13 +107,8 @@
       return questions;
     }
     function updateCompletedList() {
-      const questions = getAllQuestions();
-      let html = '';
-      questions.forEach((q, i) => {
-        let sel = Array.from(q.radios).find(r=>r.checked);
-        html += `<span style='margin-right:12px;'>Q${i+1}: ` + (sel ? `<b style='color:#10b981'>${sel.value}</b>` : `<span style='color:#64748b'>未选</span>`) + '</span>';
-      });
-      document.getElementById('completed-list').innerHTML = html;
+      // 默认隐藏，仅批改后显示
+      document.getElementById('completed-list').style.display = 'none';
     }
     document.getElementById('right').addEventListener('change', function(e){
       if(e.target.type==='radio') updateCompletedList();
@@ -126,21 +120,26 @@
       const questions = getAllQuestions();
       let correctCount = 0;
       let total = questions.length;
+      let detailHtml = '';
       questions.forEach((q, i) => {
-        // 正确答案存储在data-answer属性（后续可由后端/模板注入）
         let answer = null;
         q.radios.forEach(r => {
           if(r.dataset.answer==='true') answer = r.value;
         });
         let sel = Array.from(q.radios).find(r=>r.checked);
+        let userAns = sel ? sel.value : 'Not selected';
         if(sel && answer && sel.value===answer) {
           correctCount++;
           q.el.style.background = '#e6ffed';
+          // 做对了不显示用户答案
+          detailHtml += `<div style='margin-bottom:6px;'>Q${i+1}: <span style='color:#10b981'>${answer || '-'}</span></div>`;
         } else {
           q.el.style.background = sel ? '#ffe4e6' : '';
+          // 做错了显示用户答案为红色
+          detailHtml += `<div style='margin-bottom:6px;'>Q${i+1}: <span style='color:#ef4444;font-weight:bold'>${userAns}</span> / <span style='color:#10b981'>${answer || '-'}</span></div>`;
         }
       });
-      document.getElementById('score-result').textContent = `得分：${correctCount} / ${total}`;
+      document.getElementById('score-result').innerHTML = `Correct Answers：${correctCount} / ${total}<div style='margin-top:10px;'>${detailHtml}</div>`;
     };
     // 重置答题
     document.getElementById('btnReset').onclick = function() {

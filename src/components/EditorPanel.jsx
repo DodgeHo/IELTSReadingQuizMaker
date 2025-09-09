@@ -19,7 +19,7 @@ function EditorPanel({ title, setTitle, readingText, setReadingText }) {
         theme="snow"
         value={readingText}
         onChange={setReadingText}
-        style={{ height: '70vh', marginBottom: '12px', background: '#fff' }}
+        style={{ height: '80vh', marginBottom: '12px', background: '#fff' }}
         placeholder="请输入阅读材料，可使用格式化工具栏..."
       />
     </section>
