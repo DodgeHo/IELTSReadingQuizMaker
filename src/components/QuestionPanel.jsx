@@ -2,8 +2,13 @@ import React, { useState } from 'react';
 
 function QuestionPanel({ groups, setGroups }) {
   // 新建大题相关
+  const typeInstructions = {
+    single: 'Choose the correct letter, A, B, C or D.',
+    tf: `Do the following statements agree with the information given in the reading passage?\n\nWrite:\nTRUE if the statement agrees with the information\nFALSE if the statement contradicts the information\nNOT GIVEN if there is no information on this`,
+    yn: `Do the following statements agree with the claims of the writer in Reading Passage?\n\nIn boxes on your answer sheet, write\nYES if the statement agrees with the claims of the writer\nNO if the statement contradicts the claims of the writer\nNOT GIVEN if it is impossible to say what the writer thinks about this`
+  };
   const [newGroupType, setNewGroupType] = useState('single');
-  const [newGroupInstruction, setNewGroupInstruction] = useState('Choose the correct letter, A, B, C or D.');
+  const [newGroupInstruction, setNewGroupInstruction] = useState(typeInstructions.single);
   // 当前激活大题索引
   const [activeGroup, setActiveGroup] = useState(null);
 
@@ -103,44 +108,24 @@ function QuestionPanel({ groups, setGroups }) {
               }}
             />
             <div style={{marginBottom:'8px'}}>
-              <span style={{fontWeight:'bold'}}>正确选项：</span>
-              {(group._newQOptions || ['','']).map((opt, oi) => (
+              <span style={{fontWeight:'bold'}}>选项：</span>
+              {(group._newQOptions || []).map((opt, oi) => (
                 <div key={oi} style={{display:'flex',alignItems:'center',marginBottom:'4px'}}>
                   <input type="radio" name={`newans_${group.id}`} checked={group._newQAnswer===oi} onChange={()=>{
                     const newGroups = [...groups];
                     newGroups[gi]._newQAnswer = oi;
                     setGroups(newGroups);
                   }}/>
-                  <label>{String.fromCharCode(65+oi)}.</label>
-                  <textarea value={opt} onChange={e=>{
-                    const newGroups = [...groups];
-                    newGroups[gi]._newQOptions[oi] = e.target.value;
-                    setGroups(newGroups);
-                  }} style={{width:'70%',height:'32px',marginLeft:'8px',fontSize:'15px',resize:'vertical'}} placeholder={`选项${String.fromCharCode(65+oi)}`}/>
-                  <button style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:'6px',padding:'2px 8px',marginLeft:'8px'}} onClick={()=>{
-                    const newGroups = [...groups];
-                    newGroups[gi]._newQOptions = newGroups[gi]._newQOptions.filter((_,idx)=>idx!==oi);
-                    setGroups(newGroups);
-                  }}>删除选项</button>
+                  <label>{opt}</label>
                 </div>
               ))}
-              <button style={{background:'#3b82f6',color:'#fff',border:'none',borderRadius:'6px',padding:'2px 10px',marginTop:'4px'}} onClick={()=>{
-                const newGroups = [...groups];
-                if(!newGroups[gi]._newQOptions) newGroups[gi]._newQOptions = ['','','',''],
-                newGroups[gi]._newQOptions.push('');
-                setGroups(newGroups);
-              }}>添加选项</button>
             </div>
             <button
               onClick={() => {
                 const newGroups = [...groups];
-                const opts = (newGroups[gi]._newQOptions || []).filter(s=>s.trim());
+                const opts = [...newGroups[gi]._newQOptions];
                 if(!newGroups[gi]._newQText) {
                   window.alert('请填写题干内容！');
-                  return;
-                }
-                if(!opts.length) {
-                  window.alert('请至少填写一个选项！');
                   return;
                 }
                 const nextQid = newGroups[gi].questions.length>0 ? newGroups[gi].questions[newGroups[gi].questions.length-1].id+1 : 1;
@@ -151,7 +136,9 @@ function QuestionPanel({ groups, setGroups }) {
                   answer: typeof newGroups[gi]._newQAnswer==='number' ? newGroups[gi]._newQAnswer : 0
                 });
                 newGroups[gi]._newQText = '';
-                newGroups[gi]._newQOptions = ['','','',''],
+                if(newGroups[gi].type==='single') newGroups[gi]._newQOptions = ['','','',''];
+                if(newGroups[gi].type==='tf') newGroups[gi]._newQOptions = ['TRUE','FALSE','NOT GIVEN'];
+                if(newGroups[gi].type==='yn') newGroups[gi]._newQOptions = ['YES','NO','NOT GIVEN'];
                 newGroups[gi]._newQAnswer = 0;
                 setGroups(newGroups);
               }}
@@ -163,25 +150,34 @@ function QuestionPanel({ groups, setGroups }) {
 
       <div style={{border:'1px solid #e5e7eb',borderRadius:'8px',padding:'12px',marginBottom:'18px',background:'rgba(220, 239, 255, 1)ff'}}>
         <div style={{marginBottom:'16px'}}>
-      <label>题型：</label>
-      <select value={newGroupType} onChange={e=>setNewGroupType(e.target.value)}>
-        <option value="single">单选题（四个选项）</option>
-      </select>
+          <label>题型：</label>
+          <select value={newGroupType} onChange={e=>{
+            setNewGroupType(e.target.value);
+            setNewGroupInstruction(typeInstructions[e.target.value]);
+          }}>
+            <option value="single">单选题（A/B/C/D）</option>
+            <option value="tf">事实判断题（TRUE/FALSE/NOT GIVEN）</option>
+            <option value="yn">观点匹配题（YES/NO/NOT GIVEN）</option>
+          </select>
         </div>
         <button style={{marginBottom:'12px',padding:'8px 16px',background:'#10b981',color:'#fff',border:'none',borderRadius:'8px'}}
             onClick={() => {
             const nextId = groups.length+1;
+            let options = [];
+            if(newGroupType==='single') options = ['','','',''];
+            if(newGroupType==='tf') options = ['TRUE','FALSE','NOT GIVEN'];
+            if(newGroupType==='yn') options = ['YES','NO','NOT GIVEN'];
             setGroups([...groups, {
                 id: nextId,
                 type: newGroupType,
                 instruction: newGroupInstruction,
                 questions: [],
                 _newQText: '',
-                _newQOptions: ['','','',''],
+                _newQOptions: options,
                 _newQAnswer: 0
             }]);
             setActiveGroup(nextId-1);
-            setNewGroupInstruction('Choose the correct letter, A, B, C or D.');
+            setNewGroupInstruction(typeInstructions[newGroupType]);
             }}
         >添加新的大题</button>
       </div>
