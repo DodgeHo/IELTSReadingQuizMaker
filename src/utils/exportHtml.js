@@ -35,6 +35,14 @@ function renderQuestions(questions) {
           const isCorrect = q.answer === oi ? " data-answer='true'" : '';
           return `<li style='margin-bottom:6px'><label style='display:flex;align-items:center;font-size:15px;'><input type='radio' name='${name}' value='${letter}' style='margin-right:8px'${isCorrect}/> <span style='font-weight:bold;margin-right:8px'>${letter}.</span> <span>${opt}</span></label></li>`;
         }).join('') + '</ul>';
+      } else if (q.type === 'multi') {
+        // 双选题用checkbox，正确答案数组
+        const correctArr = Array.isArray(q.answer) ? q.answer : [];
+        opts = `<ul style='list-style:none;padding-left:0;margin:8px 0 0 0;'>` + q.options.map((opt, oi) => {
+          const letter = String.fromCharCode(65+oi);
+          const isCorrect = correctArr.includes(oi) ? " data-answer='true'" : '';
+          return `<li style='margin-bottom:6px'><label style='display:flex;align-items:center;font-size:15px;'><input type='checkbox' name='${name}' value='${letter}' style='margin-right:8px'${isCorrect}/> <span style='font-weight:bold;margin-right:8px'>${letter}.</span> <span>${opt}</span></label></li>`;
+        }).join('') + '</ul>';
       } else {
         // 其他题型不显示选项号
         opts = `<ul style='list-style:none;padding-left:0;margin:8px 0 0 0;'>` + q.options.map((opt, oi) => {
