@@ -11,7 +11,7 @@ function QuestionPanel({ groups, setGroups, showToast }) {
   const [newGroupType, setNewGroupType] = useState('single');
   const [newGroupInstruction, setNewGroupInstruction] = useState(typeInstructions.single);
   // 双选题选项数
-  const [multiOptionCount, setMultiOptionCount] = useState(4);
+  const [multiOptionCount, setMultiOptionCount] = useState(5);
   // 当前激活大题索引
   const [activeGroup, setActiveGroup] = useState(null);
 
@@ -97,6 +97,28 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                 )}
                 {group.type === 'multi' && (
                   <div style={{marginLeft:'12px'}}>
+                    <div style={{marginBottom:'6px'}}>
+                      <label>选项数：</label>
+                      <input type="number" min={3} max={10} value={q.options.length} onChange={e=>{
+                        let v = parseInt(e.target.value, 10);
+                        if(isNaN(v) || v<3) v = 3;
+                        if(v>10) v = 10;
+                        const newGroups = [...groups];
+                        let opts = [...newGroups[gi].questions[qi].options];
+                        if(v > opts.length) {
+                          opts = opts.concat(Array(v - opts.length).fill(''));
+                        } else if(v < opts.length) {
+                          opts = opts.slice(0, v);
+                          // 答案同步修正
+                          if(Array.isArray(newGroups[gi].questions[qi].answer)) {
+                            newGroups[gi].questions[qi].answer = newGroups[gi].questions[qi].answer.filter(idx=>idx<v);
+                          }
+                        }
+                        newGroups[gi].questions[qi].options = opts;
+                        setGroups(newGroups);
+                      }} style={{width:'60px',marginLeft:'8px'}} />
+                      <span style={{color:'#888',marginLeft:'8px'}}>（3-10个）</span>
+                    </div>
                     {q.options.map((opt, oi) => (
                       <div key={oi} style={{display:'flex',alignItems:'center',marginBottom:'4px'}}>
                         <input type="checkbox" name={`ans_${group.id}_${q.id}`} checked={Array.isArray(q.answer) && q.answer.includes(oi)} onChange={()=>{
@@ -167,6 +189,29 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                 setGroups(newGroups);
               }}
             />
+            {group.type === 'multi' && (
+              <span style={{marginRight:'12px'}}>
+                <label>选项数：</label>
+                <input type="number" min={3} max={10} value={group._newQOptions ? group._newQOptions.length : 4}
+                  onChange={e => {
+                    let v = parseInt(e.target.value, 10);
+                    if(isNaN(v) || v<3) v = 3;
+                    if(v>10) v = 10;
+                    const newGroups = [...groups];
+                    let opts = Array.isArray(newGroups[gi]._newQOptions) ? [...newGroups[gi]._newQOptions] : Array(4).fill('');
+                    if(v > opts.length) {
+                      opts = opts.concat(Array(v - opts.length).fill(''));
+                    } else if(v < opts.length) {
+                      opts = opts.slice(0, v);
+                    }
+                    newGroups[gi]._newQOptions = opts;
+                    setGroups(newGroups);
+                  }}
+                  style={{width:'60px',marginLeft:'8px'}}
+                />
+                <span style={{color:'#888',marginLeft:'8px'}}>（3-10个）</span>
+              </span>
+            )}
             <button
               onClick={() => {
                 const newGroups = [...groups];
@@ -177,15 +222,20 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                 const nextQid = newGroups[gi].questions && newGroups[gi].questions.length>0 ? newGroups[gi].questions[newGroups[gi].questions.length-1].id+1 : 1;
                 let options = [];
                 if(newGroups[gi].type==='single') options = ['','','',''];
+                if(newGroups[gi].type==='multi') {
+                  let count = Array.isArray(newGroups[gi]._newQOptions) ? newGroups[gi]._newQOptions.length : 4;
+                  options = Array(count).fill('');
+                }
                 if(newGroups[gi].type==='tf') options = ['TRUE','FALSE','NOT GIVEN'];
                 if(newGroups[gi].type==='yn') options = ['YES','NO','NOT GIVEN'];
                 newGroups[gi].questions.push({
                   id: nextQid,
                   text: newGroups[gi]._newQText,
                   options,
-                  answer: 0
+                  answer: newGroups[gi].type==='multi' ? [] : 0
                 });
                 newGroups[gi]._newQText = '';
+                if(newGroups[gi].type==='multi') newGroups[gi]._newQOptions = Array(4).fill('');
                 setGroups(newGroups);
               }}
               style={{padding:'8px 16px',background:'#14745cff',color:'#fff',border:'none',borderRadius:'8px',marginBottom:'12px'}}
@@ -208,18 +258,7 @@ function QuestionPanel({ groups, setGroups, showToast }) {
             <option value="yn">观点匹配题（YES/NO/NOT GIVEN）</option>
           </select>
         </div>
-        {newGroupType === 'multi' && (
-          <div style={{marginBottom:'12px'}}>
-            <label>选项个数：</label>
-            <input type="number" min={3} max={10} value={multiOptionCount} onChange={e=>{
-              let v = parseInt(e.target.value, 10);
-              if(isNaN(v) || v<3) v = 3;
-              if(v>10) v = 10;
-              setMultiOptionCount(v);
-            }} style={{width:'60px',marginLeft:'8px'}} />
-            <span style={{color:'#888',marginLeft:'8px'}}>（3-10个）</span>
-          </div>
-        )}
+  {/* 移除大题添加区的选项数设置，仅在小题添加区设置 */}
         <button style={{marginBottom:'12px',padding:'8px 16px',background:'#10b981',color:'#fff',border:'none',borderRadius:'8px'}}
             onClick={() => {
             const nextId = groups.length+1;
