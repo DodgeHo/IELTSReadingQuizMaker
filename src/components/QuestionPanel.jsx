@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 function QuestionPanel({ groups, setGroups, showToast }) {
   // 新建大题相关
@@ -30,11 +32,17 @@ function QuestionPanel({ groups, setGroups, showToast }) {
               }
             }}>删除该大题</button>
           </div>
-          <textarea value={group.instruction} onChange={e=>{
-            const newGroups = [...groups];
-            newGroups[gi].instruction = e.target.value;
-            setGroups(newGroups);
-          }} style={{width:'100%',height:'40px',marginBottom:'8px',fontSize:'15px',resize:'vertical'}}/>
+          <ReactQuill
+            theme="snow"
+            value={group.instruction}
+            onChange={value => {
+              const newGroups = [...groups];
+              newGroups[gi].instruction = value;
+              setGroups(newGroups);
+            }}
+            style={{ height: '80px', marginBottom: '60px', background: '#fff' }}
+            placeholder="输入大题说明，可使用格式化工具栏..."
+          />
           
           {/* 填空题特殊处理：整段编辑 */}
           {group.type === 'blank' ? (
@@ -44,19 +52,21 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                   <b>填空题操作提示：</b>
                 </div>
                 <div>在题干中插入 <b>[[空1]]</b>、<b>[[空2]]</b> 等标记，即可自动生成空位。</div>
-                <div>每个空的正确答案可设置多个，用逗号分隔（如：<span style={{color:'#3b82f6'}}>river, stream</span>）。</div>
-                <div style={{marginTop:4,color:'#ef4444'}}>注意：空位标记必须为 <b>[[空数字]]</b>，如 [[空1]]、[[空2]]。</div>
+                <div>每个空的正确答案可设置多个，用分号分隔（如：<span style={{color:'#3b82f6'}}>60000;60,000;sixty thousand</span>）。</div>
+                <div style={{marginTop:4,color:'#ef4444'}}>注意：空位标记必须为 <b>[[空数字]]</b>，且从1开始计数，如 [[空1]]、[[空2]]。</div>
               </div>
               
               <label style={{fontWeight:'bold',marginBottom:'6px',display:'block'}}>题目内容（整段编辑）：</label>
-              <textarea 
+              <ReactQuill
+                theme="snow"
                 value={group.blankContent || ''}
-                onChange={e => {
+                onChange={value => {
                   const newGroups = [...groups];
-                  newGroups[gi].blankContent = e.target.value;
+                  newGroups[gi].blankContent = value;
                   
-                  // 自动识别空数并生成answers数组
-                  const blanks = e.target.value.match(/\[\[空(\d+)\]\]/g) || [];
+                  // 自动识别空数并生成answers数组（从纯文本中识别）
+                  const plainText = value.replace(/<[^>]*>/g, ''); // 去除HTML标签
+                  const blanks = plainText.match(/\[\[空(\d+)\]\]/g) || [];
                   const blankCount = blanks.length;
                   if(!Array.isArray(newGroups[gi].blankAnswers)) newGroups[gi].blankAnswers = [];
                   while(newGroups[gi].blankAnswers.length < blankCount) newGroups[gi].blankAnswers.push('');
@@ -64,15 +74,14 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                   
                   setGroups(newGroups);
                 }}
-                style={{width:'100%',height:'120px',fontSize:'15px',resize:'vertical'}}
-                placeholder="输入题目内容，用[[空1]]、[[空2]]等标记空位，例如：
-The [[空1]] is a major river that flows through many countries. It provides [[空2]] for millions of people."
+                style={{height:'120px',marginBottom:'80px',background:'#fff'}}
+                placeholder="输入题目内容，用[[空1]]、[[空2]]等标记空位，可使用格式化工具栏..."
               />
               
               {/* 答案设置区 */}
               {Array.isArray(group.blankAnswers) && group.blankAnswers.length > 0 && (
                 <div style={{marginTop:'12px',background:'#f1f5f9',borderRadius:'6px',padding:'8px'}}>
-                  <div style={{fontWeight:'bold',marginBottom:'8px'}}>设置每个空的正确答案（多个答案用英文逗号分隔，大小写不区分）：</div>
+                  <div style={{fontWeight:'bold',marginBottom:'8px'}}>设置每个空的正确答案（多个答案用分号分隔，大小写不区分）：</div>
                   {group.blankAnswers.map((ans, ai) => (
                     <div key={ai} style={{marginBottom:'6px',display:'flex',alignItems:'center'}}>
                       <label style={{minWidth:'50px'}}>空{ai+1}：</label>
@@ -85,7 +94,7 @@ The [[空1]] is a major river that flows through many countries. It provides [[�
                           setGroups(newGroups);
                         }} 
                         style={{flex:1,marginLeft:'8px',fontSize:'15px',padding:'4px 8px'}} 
-                        placeholder="如：river,stream"
+                        placeholder="如：60000;60,000;sixty thousand"
                       />
                     </div>
                   ))}

@@ -2,21 +2,30 @@ function renderQuestions(questions) {
   // 分组拆分，按instruction分组
   let html = '';
   let groupQuestions = [];
+  let groupBlankContent = []; // 填空题单独处理
   let groupCount = 0;
   let pendingInstruction = '';
   let globalIndex = 1;
   questions.forEach((q, idx) => {
     if(q.instruction && q.instruction.trim()) {
       // 输出上一组（把分组说明和题目一起包裹）
-      if(groupQuestions.length || pendingInstruction) {
+      if(groupQuestions.length || groupBlankContent.length || pendingInstruction) {
         html += `<div style='border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:18px;background:#f9fafb'>`;
         if(pendingInstruction) {
           html += `<div style='color:#64748b;font-size:16px;font-weight:bold;margin-bottom:10px'>${pendingInstruction}</div>`;
         }
-        html += `<ol start='${globalIndex}'>${groupQuestions.join('')}</ol>`;
+        // 先渲染有序列表的题目
+        if(groupQuestions.length) {
+          html += `<ol start='${globalIndex}'>${groupQuestions.join('')}</ol>`;
+          globalIndex += groupQuestions.length;
+        }
+        // 再渲染填空题（无序号，但已在处理时计算过题号）
+        if(groupBlankContent.length) {
+          html += groupBlankContent.join('');
+        }
         html += `</div>`;
-        globalIndex += groupQuestions.length;
         groupQuestions = [];
+        groupBlankContent = [];
         pendingInstruction = '';
       }
       pendingInstruction = q.instruction;
@@ -24,19 +33,22 @@ function renderQuestions(questions) {
       return; // 跳过分组说明，不渲染为题目
     }
     
-    // 填空题特殊处理：使用blankContent整段渲染
+    // 填空题特殊处理：使用blankContent整段渲染，每个空都有题号
     if(q.type === 'blank' && q.blankContent) {
       let blankIdx = 0;
+      const startQNum = globalIndex; // 记录起始题号
       const html = q.blankContent.replace(/\[\[空(\d+)\]\]/g, (m, n) => {
         let ans = '';
         if(q.blankAnswers && q.blankAnswers[blankIdx]) {
-          ans = q.blankAnswers[blankIdx]; // 允许多个答案，逗号分隔
+          ans = q.blankAnswers[blankIdx]; // 用分号分隔的多个答案
         }
+        const currentQNum = startQNum + blankIdx;
         blankIdx++;
-        return `<input type='text' class='blank-input' data-answer='${ans}' style='width:120px;margin:0 4px'/>`;
+        return `<input type='text' class='blank-input' data-answer='${ans}' data-question-num='${currentQNum}' style='width:120px;margin:0 4px;border:1px solid #ccc;padding:2px 4px'/>`;
       });
-      groupQuestions.push(`<li style='margin-bottom:18px'><div style='font-size:16px;margin-bottom:6px'>${html}</div></li>`);
-      globalIndex++; // 填空题作为一道大题
+      // 填空题单独处理，但参与题号计算
+      groupBlankContent.push(`<div style='margin-bottom:18px;padding:12px;background:#fff;border-radius:6px'><div style='font-size:16px;line-height:1.6'>${html}</div></div>`);
+      globalIndex += blankIdx; // 每个空都占一个题号
       return;
     }
     
@@ -70,14 +82,20 @@ function renderQuestions(questions) {
       groupQuestions.push(`<li style='margin-bottom:18px'><div style='font-size:16px;margin-bottom:6px'>${q.text}</div>${opts}</li>`);
     }
   });
-  if(groupQuestions.length || pendingInstruction) {
+  if(groupQuestions.length || groupBlankContent.length || pendingInstruction) {
     html += `<div style='border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:18px;background:#f9fafb'>`;
     if(pendingInstruction) {
       html += `<div style='color:#64748b;font-size:16px;font-weight:bold;margin-bottom:10px'>${pendingInstruction}</div>`;
     }
-    html += `<ol start='${globalIndex}'>${groupQuestions.join('')}</ol>`;
+    // 先渲染有序列表的题目
+    if(groupQuestions.length) {
+      html += `<ol start='${globalIndex}'>${groupQuestions.join('')}</ol>`;
+    }
+    // 再渲染填空题（无序号，但有题号）
+    if(groupBlankContent.length) {
+      html += groupBlankContent.join('');
+    }
     html += `</div>`;
-    globalIndex += groupQuestions.length;
   }
   return html;
 }

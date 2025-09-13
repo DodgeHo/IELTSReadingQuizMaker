@@ -57,12 +57,12 @@
       questions.forEach((q, i) => {
         let hasAnswer = false;
         if(q.type === 'blank') {
-          hasAnswer = Array.from(q.blanks).some(input => input.value.trim());
+          hasAnswer = q.input.value.trim() !== '';
         } else {
           hasAnswer = Array.from(q.radios).some(r => r.checked);
         }
         const btn = document.createElement('button');
-        btn.textContent = i+1;
+        btn.textContent = q.questionNum || (i+1);
         btn.style.background = hasAnswer ? '#3b82f6' : '#e5e7eb';
         btn.style.color = hasAnswer ? '#fff' : '#64748b';
         btn.style.border = 'none';
@@ -83,6 +83,12 @@
         updateNavQuestions();
       }
     });
+    // 监听填空题的输入事件
+    document.getElementById('right').addEventListener('input', function(e){
+      if(e.target.className==='blank-input') {
+        updateNavQuestions();
+      }
+    });
     updateNavQuestions();
     // 顶部计时器
     let _t=0; const _timerEl=document.getElementById('top-timer');
@@ -96,28 +102,35 @@
     // 答题统计与批改功能
     function getAllQuestions() {
       const qBlocks = document.querySelectorAll('#right ol > li');
+      const blankInputs = document.querySelectorAll('#right input.blank-input');
       let questions = [];
-      qBlocks.forEach((li, idx) => {
-        const radios = li.querySelectorAll('input[type=radio],input[type=checkbox]');
-        const blanks = li.querySelectorAll('input.blank-input');
+      
+      // 处理选择题（在ol中）
+      qBlocks.forEach((block, idx) => {
+        const radios = block.querySelectorAll('input[type=radio],input[type=checkbox]');
         if(radios.length) {
           questions.push({
-            el: li,
+            el: block,
             radios,
-            idx,
+            idx: questions.length,
             selected: null,
             correct: null,
             type: radios[0].type === 'checkbox' ? 'multi' : 'single'
           });
-        } else if(blanks.length) {
-          questions.push({
-            el: li,
-            blanks,
-            idx,
-            type: 'blank'
-          });
         }
       });
+      
+      // 处理填空题（每个空位单独作为一道题）
+      blankInputs.forEach((input, idx) => {
+        questions.push({
+          el: input.closest('div'), // 找到包含的div
+          input: input,
+          idx: questions.length,
+          type: 'blank',
+          questionNum: input.dataset.questionNum || (questions.length + 1)
+        });
+      });
+      
       return questions;
     }
     function updateCompletedList() {
@@ -137,23 +150,17 @@
       let detailHtml = '';
       questions.forEach((q, i) => {
         if(q.type==='blank') {
-          let blankCorrect = 0;
-          let blankTotal = q.blanks.length;
-          let blankDetails = [];
-          q.blanks.forEach((input, bi) => {
-            const correctAns = (input.dataset.answer || '').split(',').map(s=>s.trim().toLowerCase()).filter(s=>s);
-            const userAns = (input.value || '').trim().toLowerCase();
-            if(userAns && correctAns.includes(userAns)) {
-              blankCorrect++;
-              input.style.background = '#e6ffed';
-              blankDetails.push(`<span style='color:#10b981'>${input.value}</span>`);
-            } else {
-              input.style.background = userAns ? '#ffe4e6' : '';
-              blankDetails.push(`<span style='color:#ef4444;font-weight:bold'>${input.value||'-'}</span> / <span style='color:#10b981'>${input.dataset.answer||'-'}</span>`);
-            }
-          });
-          correctCount += blankCorrect;
-          detailHtml += `<div style='margin-bottom:6px;'>Q${i+1}: ${blankDetails.join(' , ')}</div>`;
+          const correctAns = (q.input.dataset.answer || '').split(';').map(s=>s.trim().toLowerCase()).filter(s=>s);
+          const userAns = (q.input.value || '').trim().toLowerCase();
+          const qNum = q.questionNum || (i+1);
+          if(userAns && correctAns.includes(userAns)) {
+            correctCount++;
+            q.input.style.background = '#e6ffed';
+            detailHtml += `<div style='margin-bottom:4px'>Q${qNum}: <span style='color:#10b981'>${q.input.value}</span></div>`;
+          } else {
+            q.input.style.background = userAns ? '#ffe4e6' : '';
+            detailHtml += `<div style='margin-bottom:4px'>Q${qNum}: <span style='color:#ef4444;font-weight:bold'>${q.input.value||'-'}</span> / <span style='color:#10b981'>${q.input.dataset.answer||'-'}</span></div>`;
+          }
         } else {
           let answer = null;
           if(q.type==='multi') {
@@ -196,10 +203,8 @@
       const questions = getAllQuestions();
       questions.forEach(q => {
         if(q.type === 'blank') {
-          q.blanks.forEach(input => {
-            input.value = '';
-            input.style.background = '';
-          });
+          q.input.value = '';
+          q.input.style.background = '';
         } else {
           q.radios.forEach(r => r.checked=false);
         }
