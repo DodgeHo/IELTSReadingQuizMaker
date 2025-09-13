@@ -44,7 +44,7 @@ function renderQuestions(questions) {
         }
         const currentQNum = startQNum + blankIdx;
         blankIdx++;
-        return `<input type='text' class='blank-input' data-answer='${ans}' data-question-num='${currentQNum}' style='width:120px;margin:0 4px;border:1px solid #ccc;padding:2px 4px'/>`;
+        return `<input type='text' class='blank-input' data-answer='${ans}' data-question-num='${currentQNum}' placeholder='${currentQNum}' style='width:120px;margin:0 4px;border:1px solid #ccc;padding:2px 4px'/>`;
       });
       // 填空题单独处理，但参与题号计算
       groupBlankContent.push(`<div style='margin-bottom:18px;padding:12px;background:#fff;border-radius:6px'><div style='font-size:16px;line-height:1.6'>${html}</div></div>`);
@@ -75,7 +75,7 @@ function renderQuestions(questions) {
               ans = q.tableAnswers[blankIdx]; // 用分号分隔的多个答案
             }
             const currentQNum = startQNum + blankIdx;
-            tableHtml += `<input type='text' class='blank-input' data-answer='${ans}' data-question-num='${currentQNum}' style='width:120px;margin:0 4px;border:1px solid #ccc;padding:2px 4px'/>`;
+            tableHtml += `<input type='text' class='blank-input' data-answer='${ans}' data-question-num='${currentQNum}' placeholder='${currentQNum}' style='width:120px;margin:0 4px;border:1px solid #ccc;padding:2px 4px'/>`;
             blankIdx++;
           } else if (cell.type === 'mixed') {
             // 处理混合类型：文字 + [空]
@@ -87,7 +87,7 @@ function renderQuestions(questions) {
               }
               const currentQNum = startQNum + blankIdx;
               blankIdx++;
-              return `<input type='text' class='blank-input' data-answer='${ans}' data-question-num='${currentQNum}' style='width:120px;margin:0 4px;border:1px solid #ccc;padding:2px 4px'/>`;
+              return `<input type='text' class='blank-input' data-answer='${ans}' data-question-num='${currentQNum}' placeholder='${currentQNum}' style='width:120px;margin:0 4px;border:1px solid #ccc;padding:2px 4px'/>`;
             });
             tableHtml += content;
           } else if (cell.type === 'empty') {
