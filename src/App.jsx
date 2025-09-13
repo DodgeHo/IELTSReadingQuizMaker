@@ -5,6 +5,8 @@ import QuestionPanel from './components/QuestionPanel';
 import ExportButton from './components/ExportButton';
 import './style.css';
 
+const { ipcRenderer } = window.require('electron');
+
 function App() {
   const [title, setTitle] = useState('');
   const [readingText, setReadingText] = useState('');
@@ -27,17 +29,20 @@ function App() {
       window.showToast = undefined;
     };
   }, []);
-  const handleSaveProject = () => {
+  const handleSaveProject = async () => {
     const data = JSON.stringify({ title, readingText, footnote, groups }, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = (title ? title.replace(/[^a-zA-Z0-9_]/g,'_') : 'IELTS_Project') + '.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const fileName = (title ? title.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5]/g,'_') : 'IELTS_Project') + '.json';
+    
+    try {
+      const result = await ipcRenderer.invoke('save-project', { data, fileName });
+      if (result.success) {
+        showToast('保存成功！');
+      } else {
+        showToast('保存失败：' + result.error);
+      }
+    } catch (error) {
+      showToast('保存失败：' + error.message);
+    }
   };
 
   // 载入工程

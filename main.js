@@ -60,6 +60,38 @@ ipcMain.handle('save-html', async (event, { title, leftContent, rightContent, de
   }
 });
 
+// 保存项目文件
+ipcMain.handle('save-project', async (event, { data, fileName }) => {
+  try {
+    // 1. 确保projects文件夹存在
+    const projectsDir = path.join(__dirname, 'projects');
+    if (!fs.existsSync(projectsDir)) {
+      fs.mkdirSync(projectsDir, { recursive: true });
+    }
+
+    // 2. 设置默认保存路径
+    const defaultPath = path.join(projectsDir, fileName);
+
+    // 3. 弹出保存对话框，默认路径指向projects文件夹
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      title: '保存工程文件',
+      defaultPath,
+      filters: [{ name: 'JSON文件', extensions: ['json'] }],
+    });
+
+    if (canceled || !filePath) {
+      return { success: false, error: '用户取消保存' };
+    }
+
+    // 4. 写入文件
+    fs.writeFileSync(filePath, data, 'utf-8');
+    return { success: true, filePath };
+
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
