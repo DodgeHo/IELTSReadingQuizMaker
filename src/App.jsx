@@ -8,6 +8,7 @@ import './style.css';
 function App() {
   const [title, setTitle] = useState('');
   const [readingText, setReadingText] = useState('');
+  const [footnote, setFootnote] = useState('');
   // 顶层题目分组状态
   const [groups, setGroups] = useState([]);
 
@@ -27,7 +28,7 @@ function App() {
     };
   }, []);
   const handleSaveProject = () => {
-    const data = JSON.stringify({ title, readingText, groups }, null, 2);
+    const data = JSON.stringify({ title, readingText, footnote, groups }, null, 2);
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -49,6 +50,7 @@ function App() {
         const obj = JSON.parse(evt.target.result);
         setTitle(obj.title || '');
         setReadingText(obj.readingText || '');
+        setFootnote(obj.footnote || '');
         setGroups(obj.groups || []);
         showToast('载入成功！');
       } catch {
@@ -65,6 +67,8 @@ function App() {
         setTitle={setTitle}
         readingText={readingText}
         setReadingText={setReadingText}
+        footnote={footnote}
+        setFootnote={setFootnote}
       />
       <div id="divider" title="Drag to resize"></div>
       <QuestionPanel
@@ -73,7 +77,7 @@ function App() {
         showToast={showToast}
       />
       <div style={{position:'fixed',right:32,bottom:32,zIndex:1000,display:'flex',flexDirection:'column',gap:'12px'}}>
-        <ExportButton title={title} readingText={readingText} groups={groups} />
+        <ExportButton title={title} readingText={readingText} footnote={footnote} groups={groups} />
         <button
           style={{background:'#f59e42',color:'#fff',border:'none',borderRadius:'12px',fontSize:'15px',padding:'8px 20px',marginTop:'8px',boxShadow:'0 2px 8px rgba(0,0,0,.08)',cursor:'pointer'}}
           onClick={handleSaveProject}

@@ -82,8 +82,14 @@ function renderQuestions(questions) {
   return html;
 }
 
-export async function exportHtml({ title, readingText, questions }) {
-  const leftContent = `<h2>${title || '阅读材料'}</h2><div>${readingText}</div>`;
+export async function exportHtml({ title, readingText, footnote, questions }) {
+  let leftContent = `<h2>${title || '阅读材料'}</h2><div>${readingText}</div>`;
+  
+  // 添加底部批注（如果存在）
+  if (footnote && footnote.trim()) {
+    leftContent += `<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:14px;line-height:1.6;">${footnote.replace(/\n/g, '<br>')}</div>`;
+  }
+  
   let rightContent = '<h4>Questions</h4>';
   rightContent += renderQuestions(questions);
 

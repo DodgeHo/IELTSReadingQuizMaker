@@ -1,7 +1,7 @@
 import React from 'react';
 import { exportHtml } from '../utils/exportHtml';
 
-function ExportButton({ title, readingText, questions, groups }) {
+function ExportButton({ title, readingText, footnote, questions, groups }) {
   // groups结构合并为扁平题目数组，带分组说明
   // 兼容props传递问题，优先groups，其次questions
   const realGroups = Array.isArray(groups) ? groups : Array.isArray(questions) ? questions : [];
@@ -35,7 +35,7 @@ function ExportButton({ title, readingText, questions, groups }) {
       }
     });
     const { exportHtml } = await import('../utils/exportHtml');
-    exportHtml({ title, readingText, questions });
+    exportHtml({ title, readingText, footnote, questions });
   };
   return (
     <button
