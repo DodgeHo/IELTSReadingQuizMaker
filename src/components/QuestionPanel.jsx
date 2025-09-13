@@ -254,6 +254,36 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                     载入示例
                   </button>
                 </div>
+                
+                {/* 表格样式设置 */}
+                <div style={{display:'flex',alignItems:'center',gap:'20px',marginTop:'10px'}}>
+                  <label style={{display:'flex',alignItems:'center',cursor:'pointer'}}>
+                    <input 
+                      type="checkbox"
+                      checked={group.tableBoldFirstRow || false}
+                      onChange={e => {
+                        const newGroups = [...groups];
+                        newGroups[gi].tableBoldFirstRow = e.target.checked;
+                        setGroups(newGroups);
+                      }}
+                      style={{marginRight:'6px'}}
+                    />
+                    首行加粗
+                  </label>
+                  <label style={{display:'flex',alignItems:'center',cursor:'pointer'}}>
+                    <input 
+                      type="checkbox"
+                      checked={group.tableBoldFirstCol || false}
+                      onChange={e => {
+                        const newGroups = [...groups];
+                        newGroups[gi].tableBoldFirstCol = e.target.checked;
+                        setGroups(newGroups);
+                      }}
+                      style={{marginRight:'6px'}}
+                    />
+                    首列加粗
+                  </label>
+                </div>
               </div>
 
               {/* 可视化表格编辑器 */}
@@ -270,12 +300,18 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                       <tbody>
                         {group.tableData.map((row, ri) => (
                           <tr key={ri}>
-                            {row.map((cell, ci) => (
+                            {row.map((cell, ci) => {
+                              // 判断是否需要加粗
+                              const shouldBold = (group.tableBoldFirstRow && ri === 0) || (group.tableBoldFirstCol && ci === 0);
+                              
+                              return (
                               <td key={ci} style={{
                                 border:'1px solid #e5e7eb',
                                 padding:'8px',
                                 verticalAlign:'top',
-                                minWidth:'120px'
+                                minWidth:'120px',
+                                fontWeight: shouldBold ? 'bold' : 'normal',
+                                background: shouldBold ? '#f8fafc' : 'transparent'
                               }}>
                                 <div style={{marginBottom:'5px'}}>
                                   <select
@@ -369,7 +405,8 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                                   </div>
                                 )}
                               </td>
-                            ))}
+                              );
+                            })}
                           </tr>
                         ))}
                       </tbody>
@@ -394,11 +431,16 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                         <tbody>
                           {group.tableData.map((row, ri) => (
                             <tr key={ri}>
-                              {row.map((cell, ci) => (
+                              {row.map((cell, ci) => {
+                                // 判断是否需要加粗
+                                const shouldBold = (group.tableBoldFirstRow && ri === 0) || (group.tableBoldFirstCol && ci === 0);
+                                
+                                return (
                                 <td key={ci} style={{
                                   border:'1px solid #e5e7eb',
                                   padding:'8px',
-                                  background:'#fff'
+                                  background: shouldBold ? '#f8fafc' : '#fff',
+                                  fontWeight: shouldBold ? 'bold' : 'normal'
                                 }}>
                                   {cell.type === 'text' && cell.content}
                                   {cell.type === 'blank' && (
@@ -424,7 +466,8 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                                   )}
                                   {cell.type === 'empty' && ''}
                                 </td>
-                              ))}
+                                );
+                              })}
                             </tr>
                           ))}
                         </tbody>

@@ -58,10 +58,14 @@ function renderQuestions(questions) {
       const startQNum = globalIndex; // 记录起始题号
       
       let tableHtml = '<table>';
-      q.tableData.forEach(row => {
+      q.tableData.forEach((row, ri) => {
         tableHtml += '<tr>';
-        row.forEach(cell => {
-          tableHtml += '<td>';
+        row.forEach((cell, ci) => {
+          // 判断是否需要加粗
+          const shouldBold = (q.tableBoldFirstRow && ri === 0) || (q.tableBoldFirstCol && ci === 0);
+          const tdStyle = shouldBold ? ' style="font-weight:bold;background:#f8fafc;"' : '';
+          
+          tableHtml += `<td${tdStyle}>`;
           
           if (cell.type === 'text') {
             tableHtml += cell.content || '';
