@@ -10,6 +10,7 @@ function QuestionPanel({ groups, setGroups, showToast }) {
     tf: `Do the following statements agree with the information given in the reading passage?\n\nWrite:\nTRUE if the statement agrees with the information\nFALSE if the statement contradicts the information\nNOT GIVEN if there is no information on this`,
     yn: `Do the following statements agree with the claims of the writer in Reading Passage?\n\nIn boxes on your answer sheet, write\nYES if the statement agrees with the claims of the writer\nNO if the statement contradicts the claims of the writer\nNOT GIVEN if it is impossible to say what the writer thinks about this`,
     blank: 'Complete the sentences below. Write NO MORE THAN TWO WORDS from the passage for each answer.',
+    table: 'Complete the table below. Choose NO MORE THAN TWO WORDS from the passage for each answer.',
   };
   const [newGroupType, setNewGroupType] = useState('single');
   const [newGroupInstruction, setNewGroupInstruction] = useState(typeInstructions.single);
@@ -115,6 +116,72 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                         }} 
                         style={{flex:1,marginLeft:'8px',fontSize:'15px',padding:'4px 8px'}} 
                         placeholder="如：60000;60,000;sixty thousand"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : group.type === 'table' ? (
+            <div>
+              <div style={{margin:'8px 0 12px 0',color:'#64748b',fontSize:15,background:'#f6f7fb',borderRadius:6,padding:'8px 12px'}}>
+                <div style={{marginBottom:4}}>
+                  <b>表格填空题操作提示：</b>
+                </div>
+                <div>在表格单元格中插入 <b>[[空1]]</b>、<b>[[空2]]</b> 等标记，可与其他文字混合（如：A [[空1]]）。</div>
+                <div>每个空的正确答案可设置多个，用分号分隔（如：<span style={{color:'#3b82f6'}}>goal;objective</span>）。</div>
+                <div style={{marginTop:4,color:'#ef4444'}}>注意：空位标记必须为 <b>[[空数字]]</b>，如 [[空1]]、[[空2]]。</div>
+              </div>
+              
+              <label style={{fontWeight:'bold',marginBottom:'6px',display:'block'}}>表格结构（HTML表格）：</label>
+              <ReactQuill
+                theme="snow"
+                value={group.tableContent || ''}
+                onChange={value => {
+                  const newGroups = [...groups];
+                  newGroups[gi].tableContent = value;
+                  
+                  // 自动识别空数并生成answers数组（从纯文本中识别）
+                  const plainText = value.replace(/<[^>]*>/g, ''); // 去除HTML标签
+                  const blanks = plainText.match(/\[\[空(\d+)\]\]/g) || [];
+                  const blankCount = blanks.length;
+                  if(!Array.isArray(newGroups[gi].tableAnswers)) newGroups[gi].tableAnswers = [];
+                  while(newGroups[gi].tableAnswers.length < blankCount) newGroups[gi].tableAnswers.push('');
+                  while(newGroups[gi].tableAnswers.length > blankCount) newGroups[gi].tableAnswers.pop();
+                  
+                  setGroups(newGroups);
+                }}
+                style={{minHeight:'180px',marginBottom:'80px',background:'#fff'}}
+                modules={{
+                  toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline'],
+                    [{ 'align': [] }],
+                    ['link', 'image'],
+                    ['clean'],
+                    // 添加表格工具
+                    [{ 'table': 'table' }]
+                  ]
+                }}
+                placeholder="使用表格工具创建表格，在需要填空的位置插入[[空1]]、[[空2]]等标记..."
+              />
+
+              {Array.isArray(group.tableAnswers) && group.tableAnswers.length > 0 && (
+                <div>
+                  <div style={{fontWeight:'bold',marginBottom:'8px'}}>设置每个空的正确答案（多个答案用分号分隔，大小写不区分）：</div>
+                  {group.tableAnswers.map((ans, ai) => (
+                    <div key={ai} style={{display:'flex',alignItems:'center',marginBottom:'6px'}}>
+                      <span style={{minWidth:'60px',fontWeight:'bold'}}>空{ai+1}:</span>
+                      <input 
+                        type="text" 
+                        value={ans} 
+                        onChange={e => {
+                          const newGroups = [...groups];
+                          newGroups[gi].tableAnswers[ai] = e.target.value;
+                          setGroups(newGroups);
+                        }} 
+                        style={{flex:1,marginLeft:'8px',fontSize:'15px',padding:'4px 8px'}} 
+                        placeholder="如：goal;objective;target"
                       />
                     </div>
                   ))}
@@ -268,7 +335,7 @@ function QuestionPanel({ groups, setGroups, showToast }) {
           )}
           
           {/* 非填空题的小题添加区 */}
-          {group.type !== 'blank' && (
+          {group.type !== 'blank' && group.type !== 'table' && (
           <div style={{marginTop:'8px',borderTop:'1px dashed #e5e7eb',paddingTop:'8px', background:'#b3c8f3ff', borderRadius:'6px'}}>
             <h4>添加小题</h4>
             <textarea
@@ -352,6 +419,7 @@ function QuestionPanel({ groups, setGroups, showToast }) {
             <option value="tf">事实判断题（TRUE/FALSE/NOT GIVEN）</option>
             <option value="yn">观点匹配题（YES/NO/NOT GIVEN）</option>
             <option value="blank">填空题（句子填空题/段落填空题）</option>
+            <option value="table">表格填空题（表格内填空）</option>
           </select>
         </div>
   {/* 移除大题添加区的选项数设置，仅在小题添加区设置 */}

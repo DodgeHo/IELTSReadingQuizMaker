@@ -23,6 +23,13 @@ function ExportButton({ title, readingText, footnote, questions, groups }) {
           blankContent: group.blankContent,
           blankAnswers: group.blankAnswers || []
         });
+      } else if(group.type === 'table' && group.tableContent) {
+        // 表格填空题特殊处理：整个表格作为一道题
+        questions.push({
+          type: 'table',
+          tableContent: group.tableContent,
+          tableAnswers: group.tableAnswers || []
+        });
       } else {
         // 其他题型按小题处理
         group.questions.forEach(q => {

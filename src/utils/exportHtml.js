@@ -52,6 +52,25 @@ function renderQuestions(questions) {
       return;
     }
     
+    // 表格填空题特殊处理：使用tableContent渲染表格，每个空都有题号
+    if(q.type === 'table' && q.tableContent) {
+      let blankIdx = 0;
+      const startQNum = globalIndex; // 记录起始题号
+      const html = q.tableContent.replace(/\[\[空(\d+)\]\]/g, (m, n) => {
+        let ans = '';
+        if(q.tableAnswers && q.tableAnswers[blankIdx]) {
+          ans = q.tableAnswers[blankIdx]; // 用分号分隔的多个答案
+        }
+        const currentQNum = startQNum + blankIdx;
+        blankIdx++;
+        return `<input type='text' class='blank-input' data-answer='${ans}' data-question-num='${currentQNum}' style='width:120px;margin:0 4px;border:1px solid #ccc;padding:2px 4px'/>`;
+      });
+      // 表格填空题单独处理，但参与题号计算
+      groupBlankContent.push(`<div style='margin-bottom:18px;padding:12px;background:#fff;border-radius:6px'><div style='font-size:16px;line-height:1.6'>${html}</div></div>`);
+      globalIndex += blankIdx; // 每个空都占一个题号
+      return;
+    }
+    
     // 跳过无题干的题目
     if(!q.text || !q.text.trim()) return;
     let opts = '';
