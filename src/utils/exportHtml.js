@@ -85,7 +85,7 @@ function renderQuestions(questions) {
   if(groupQuestions.length || groupBlankContent.length || pendingInstruction) {
     html += `<div style='border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:18px;background:#f9fafb'>`;
     if(pendingInstruction) {
-      html += `<div style='color:#64748b;font-size:16px;font-weight:bold;margin-bottom:10px'>${pendingInstruction}</div>`;
+      html += `<div style='margin-bottom:15px'>${pendingInstruction}</div>`;
     }
     // 先渲染有序列表的题目
     if(groupQuestions.length) {
