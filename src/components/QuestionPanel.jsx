@@ -10,7 +10,7 @@ function QuestionPanel({ groups, setGroups, showToast }) {
     tf: `Do the following statements agree with the information given in the reading passage?\n\nWrite:\nTRUE if the statement agrees with the information\nFALSE if the statement contradicts the information\nNOT GIVEN if there is no information on this`,
     yn: `Do the following statements agree with the claims of the writer in Reading Passage?\n\nIn boxes on your answer sheet, write\nYES if the statement agrees with the claims of the writer\nNO if the statement contradicts the claims of the writer\nNOT GIVEN if it is impossible to say what the writer thinks about this`,
     blank: 'Complete the sentences below. Write NO MORE THAN TWO WORDS from the passage for each answer.',
-    table: 'Complete the table below. Choose NO MORE THAN TWO WORDS from the passage for each answer.',
+    table: 'Complete the table below.\nChoose NO MORE THAN TWO WORDS from the passage for each answer.\nWrite your answers in boxes on your answer sheet.',
   };
   const [newGroupType, setNewGroupType] = useState('single');
   const [newGroupInstruction, setNewGroupInstruction] = useState(typeInstructions.single);
@@ -150,12 +150,21 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                         const rows = parseInt(e.target.value) || 3;
                         newGroups[gi].tableRows = rows;
                         
-                        // 重建表格数据
+                        // 调整表格数据行数，保留现有内容
                         const cols = newGroups[gi].tableCols || 3;
-                        newGroups[gi].tableData = Array(rows).fill(null).map(() => 
-                          Array(cols).fill(null).map(() => ({type: 'text', content: ''}))
-                        );
+                        const currentData = newGroups[gi].tableData || [];
                         
+                        if (rows > currentData.length) {
+                          // 增加行数：添加新行
+                          while (currentData.length < rows) {
+                            currentData.push(Array(cols).fill(null).map(() => ({type: 'text', content: ''})));
+                          }
+                        } else if (rows < currentData.length) {
+                          // 减少行数：删除多余行
+                          currentData.splice(rows);
+                        }
+                        
+                        newGroups[gi].tableData = currentData;
                         setGroups(newGroups);
                       }}
                       style={{width:'50px',marginLeft:'5px'}}
@@ -173,12 +182,29 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                         const cols = parseInt(e.target.value) || 3;
                         newGroups[gi].tableCols = cols;
                         
-                        // 重建表格数据
+                        // 调整表格数据列数，保留现有内容
                         const rows = newGroups[gi].tableRows || 3;
-                        newGroups[gi].tableData = Array(rows).fill(null).map(() => 
-                          Array(cols).fill(null).map(() => ({type: 'text', content: ''}))
-                        );
+                        const currentData = newGroups[gi].tableData || [];
                         
+                        // 确保有足够的行
+                        while (currentData.length < rows) {
+                          currentData.push([]);
+                        }
+                        
+                        // 调整每行的列数
+                        currentData.forEach(row => {
+                          if (cols > row.length) {
+                            // 增加列数：添加新列
+                            while (row.length < cols) {
+                              row.push({type: 'text', content: ''});
+                            }
+                          } else if (cols < row.length) {
+                            // 减少列数：删除多余列
+                            row.splice(cols);
+                          }
+                        });
+                        
+                        newGroups[gi].tableData = currentData;
                         setGroups(newGroups);
                       }}
                       style={{width:'50px',marginLeft:'5px'}}
@@ -189,16 +215,30 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                     onClick={() => {
                       const newGroups = [...groups];
                       
-                      // 创建示例表格
-                      newGroups[gi].tableRows = 4;
-                      newGroups[gi].tableCols = 3;
-                      newGroups[gi].tableData = [
+                      // 载入示例表格数据（保持当前的行列数设置）
+                      const currentRows = newGroups[gi].tableRows || 3;
+                      const currentCols = newGroups[gi].tableCols || 3;
+                      
+                      // 创建示例数据（根据当前行列数调整）
+                      const exampleData = [
                         [{type: 'text', content: 'Conditions'}, {type: 'text', content: 'Type of situation'}, {type: 'text', content: 'Result'}],
                         [{type: 'text', content: 'Equal status'}, {type: 'text', content: 'eating'}, {type: 'blank', content: ''}],
                         [{type: 'text', content: ''}, {type: 'blank', content: ''}, {type: 'text', content: 'enjoyed them but were not sitting together'}],
                         [{type: 'mixed', content: 'A [空]'}, {type: 'text', content: 'raising money'}, {type: 'text', content: ''}]
                       ];
                       
+                      // 调整示例数据到当前表格尺寸
+                      const tableData = Array(currentRows).fill(null).map((_, ri) => 
+                        Array(currentCols).fill(null).map((_, ci) => {
+                          if (ri < exampleData.length && ci < exampleData[ri].length) {
+                            return exampleData[ri][ci];
+                          } else {
+                            return {type: 'text', content: ''};
+                          }
+                        })
+                      );
+                      
+                      newGroups[gi].tableData = tableData;
                       setGroups(newGroups);
                     }}
                     style={{
