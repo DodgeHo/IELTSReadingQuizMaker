@@ -6,7 +6,8 @@ function QuestionPanel({ groups, setGroups, showToast }) {
     single: 'Choose the correct letter, A, B, C or D.',
     multi: 'Choose TWO letters. There may be more than two options, but only two of them are correct.',
     tf: `Do the following statements agree with the information given in the reading passage?\n\nWrite:\nTRUE if the statement agrees with the information\nFALSE if the statement contradicts the information\nNOT GIVEN if there is no information on this`,
-    yn: `Do the following statements agree with the claims of the writer in Reading Passage?\n\nIn boxes on your answer sheet, write\nYES if the statement agrees with the claims of the writer\nNO if the statement contradicts the claims of the writer\nNOT GIVEN if it is impossible to say what the writer thinks about this`
+    yn: `Do the following statements agree with the claims of the writer in Reading Passage?\n\nIn boxes on your answer sheet, write\nYES if the statement agrees with the claims of the writer\nNO if the statement contradicts the claims of the writer\nNOT GIVEN if it is impossible to say what the writer thinks about this`,
+    blank: 'Complete the sentences below. Write NO MORE THAN TWO WORDS from the passage for each answer.',
   };
   const [newGroupType, setNewGroupType] = useState('single');
   const [newGroupInstruction, setNewGroupInstruction] = useState(typeInstructions.single);
@@ -287,6 +288,7 @@ function QuestionPanel({ groups, setGroups, showToast }) {
             <option value="multi">双选题（可自定义选项数，选2个）</option>
             <option value="tf">事实判断题（TRUE/FALSE/NOT GIVEN）</option>
             <option value="yn">观点匹配题（YES/NO/NOT GIVEN）</option>
+            <option value="blank">填空题（句子填空题/段落填空题）</option>
           </select>
         </div>
   {/* 移除大题添加区的选项数设置，仅在小题添加区设置 */}
