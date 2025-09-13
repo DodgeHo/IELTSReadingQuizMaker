@@ -35,7 +35,65 @@ function QuestionPanel({ groups, setGroups, showToast }) {
             newGroups[gi].instruction = e.target.value;
             setGroups(newGroups);
           }} style={{width:'100%',height:'40px',marginBottom:'8px',fontSize:'15px',resize:'vertical'}}/>
-          <ol>
+          
+          {/* 填空题特殊处理：整段编辑 */}
+          {group.type === 'blank' ? (
+            <div style={{background:'#f6f7fb',borderRadius:6,padding:'12px',marginBottom:'12px'}}>
+              <div style={{marginBottom:'8px',color:'#64748b',fontSize:15,background:'#e0f2fe',borderRadius:6,padding:'8px 12px'}}>
+                <div style={{marginBottom:4}}>
+                  <b>填空题操作提示：</b>
+                </div>
+                <div>在题干中插入 <b>[[空1]]</b>、<b>[[空2]]</b> 等标记，即可自动生成空位。</div>
+                <div>每个空的正确答案可设置多个，用逗号分隔（如：<span style={{color:'#3b82f6'}}>river, stream</span>）。</div>
+                <div style={{marginTop:4,color:'#ef4444'}}>注意：空位标记必须为 <b>[[空数字]]</b>，如 [[空1]]、[[空2]]。</div>
+              </div>
+              
+              <label style={{fontWeight:'bold',marginBottom:'6px',display:'block'}}>题目内容（整段编辑）：</label>
+              <textarea 
+                value={group.blankContent || ''}
+                onChange={e => {
+                  const newGroups = [...groups];
+                  newGroups[gi].blankContent = e.target.value;
+                  
+                  // 自动识别空数并生成answers数组
+                  const blanks = e.target.value.match(/\[\[空(\d+)\]\]/g) || [];
+                  const blankCount = blanks.length;
+                  if(!Array.isArray(newGroups[gi].blankAnswers)) newGroups[gi].blankAnswers = [];
+                  while(newGroups[gi].blankAnswers.length < blankCount) newGroups[gi].blankAnswers.push('');
+                  while(newGroups[gi].blankAnswers.length > blankCount) newGroups[gi].blankAnswers.pop();
+                  
+                  setGroups(newGroups);
+                }}
+                style={{width:'100%',height:'120px',fontSize:'15px',resize:'vertical'}}
+                placeholder="输入题目内容，用[[空1]]、[[空2]]等标记空位，例如：
+The [[空1]] is a major river that flows through many countries. It provides [[空2]] for millions of people."
+              />
+              
+              {/* 答案设置区 */}
+              {Array.isArray(group.blankAnswers) && group.blankAnswers.length > 0 && (
+                <div style={{marginTop:'12px',background:'#f1f5f9',borderRadius:'6px',padding:'8px'}}>
+                  <div style={{fontWeight:'bold',marginBottom:'8px'}}>设置每个空的正确答案（多个答案用英文逗号分隔，大小写不区分）：</div>
+                  {group.blankAnswers.map((ans, ai) => (
+                    <div key={ai} style={{marginBottom:'6px',display:'flex',alignItems:'center'}}>
+                      <label style={{minWidth:'50px'}}>空{ai+1}：</label>
+                      <input 
+                        type="text" 
+                        value={ans} 
+                        onChange={e => {
+                          const newGroups = [...groups];
+                          newGroups[gi].blankAnswers[ai] = e.target.value;
+                          setGroups(newGroups);
+                        }} 
+                        style={{flex:1,marginLeft:'8px',fontSize:'15px',padding:'4px 8px'}} 
+                        placeholder="如：river,stream"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <ol>
             {group.questions.map((q, qi) => (
               <li key={q.id} style={{marginBottom: '14px',borderBottom:'1px dashed #e5e7eb',paddingBottom:'8px'}}>
                 <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
@@ -64,32 +122,8 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                 <textarea value={q.text} onChange={e=>{
                   const newGroups = [...groups];
                   newGroups[gi].questions[qi].text = e.target.value;
-                  // 填空题自动识别空数，初始化answers数组
-                  if(group.type==='blank') {
-                    const blanks = e.target.value.match(/\[\[空(\d+)\]\]/g) || [];
-                    const blankCount = blanks.length;
-                    if(!Array.isArray(newGroups[gi].questions[qi].answers)) newGroups[gi].questions[qi].answers = [];
-                    // 自动扩展或收缩answers数组
-                    while(newGroups[gi].questions[qi].answers.length < blankCount) newGroups[gi].questions[qi].answers.push('');
-                    while(newGroups[gi].questions[qi].answers.length > blankCount) newGroups[gi].questions[qi].answers.pop();
-                  }
                   setGroups(newGroups);
-                }} style={{width:'100%',height:'48px',margin:'6px 0',fontSize:'15px',resize:'vertical'}} placeholder={group.type==='blank' ? '题干内容，空位用[[空1]]、[[空2]]等标记' : '题干内容'}/>
-                {group.type === 'blank' && Array.isArray(q.answers) && q.answers.length > 0 && (
-                  <div style={{marginLeft:'12px',marginTop:'8px',background:'#f1f5f9',borderRadius:'6px',padding:'8px'}}>
-                    <div style={{fontWeight:'bold',marginBottom:'6px'}}>设置每个空的正确答案（多个答案用英文逗号分隔，大小写不区分）：</div>
-                    {q.answers.map((ans, ai) => (
-                      <div key={ai} style={{marginBottom:'6px'}}>
-                        <label>空{ai+1}：</label>
-                        <input type="text" value={ans} onChange={e=>{
-                          const newGroups = [...groups];
-                          newGroups[gi].questions[qi].answers[ai] = e.target.value;
-                          setGroups(newGroups);
-                        }} style={{width:'60%',marginLeft:'8px',fontSize:'15px'}} placeholder="如：river,stream"/>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                }} style={{width:'100%',height:'48px',margin:'6px 0',fontSize:'15px',resize:'vertical'}} placeholder="题干内容"/>
                 {group.type === 'single' && (
                   <div style={{marginLeft:'12px'}}>
                     {q.options.map((opt, oi) => (
@@ -202,6 +236,10 @@ function QuestionPanel({ groups, setGroups, showToast }) {
               </li>
             ))}
           </ol>
+          )}
+          
+          {/* 非填空题的小题添加区 */}
+          {group.type !== 'blank' && (
           <div style={{marginTop:'8px',borderTop:'1px dashed #e5e7eb',paddingTop:'8px', background:'#b3c8f3ff', borderRadius:'6px'}}>
             <h4>添加小题</h4>
             <textarea
@@ -254,11 +292,6 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                 }
                 if(newGroups[gi].type==='tf') options = ['TRUE','FALSE','NOT GIVEN'];
                 if(newGroups[gi].type==='yn') options = ['YES','NO','NOT GIVEN'];
-                if(newGroups[gi].type==='blank') {
-                  // 识别空数
-                  const blanks = (newGroups[gi]._newQText.match(/\[\[空(\d+)\]\]/g) || []);
-                  answers = Array(blanks.length).fill('');
-                }
                 newGroups[gi].questions.push({
                   id: nextQid,
                   text: newGroups[gi]._newQText,
@@ -274,6 +307,7 @@ function QuestionPanel({ groups, setGroups, showToast }) {
             >添加该小题</button>
 
           </div>
+          )}
         </div>
       ))}
 

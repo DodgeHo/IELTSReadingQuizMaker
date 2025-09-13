@@ -15,13 +15,24 @@ function ExportButton({ title, readingText, questions, groups }) {
           type: group.type
         });
       }
-      group.questions.forEach(q => {
+      
+      // 填空题特殊处理：整段作为一道题
+      if(group.type === 'blank' && group.blankContent) {
         questions.push({
-          ...q,
-          type: group.type,
-          options: Array.isArray(q.options) ? q.options : []
+          type: 'blank',
+          blankContent: group.blankContent,
+          blankAnswers: group.blankAnswers || []
         });
-      });
+      } else {
+        // 其他题型按小题处理
+        group.questions.forEach(q => {
+          questions.push({
+            ...q,
+            type: group.type,
+            options: Array.isArray(q.options) ? q.options : []
+          });
+        });
+      }
     });
     const { exportHtml } = await import('../utils/exportHtml');
     exportHtml({ title, readingText, questions });

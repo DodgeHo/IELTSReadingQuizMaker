@@ -23,23 +23,27 @@ function renderQuestions(questions) {
       groupCount++;
       return; // 跳过分组说明，不渲染为题目
     }
-    // 跳过无题干的题目
-    if(!q.text || !q.text.trim()) return;
-    let opts = '';
-    if (q.type === 'blank') {
-      // 填空题渲染：将[[空1]]等替换为input，正确答案写入data-answer（支持多个答案，逗号分隔）
+    
+    // 填空题特殊处理：使用blankContent整段渲染
+    if(q.type === 'blank' && q.blankContent) {
       let blankIdx = 0;
-      const html = q.text.replace(/\[\[空(\d+)\]\]/g, (m, n) => {
+      const html = q.blankContent.replace(/\[\[空(\d+)\]\]/g, (m, n) => {
         let ans = '';
-        if(q.answers && q.answers[blankIdx]) {
-          ans = q.answers[blankIdx]; // 允许多个答案，逗号分隔
+        if(q.blankAnswers && q.blankAnswers[blankIdx]) {
+          ans = q.blankAnswers[blankIdx]; // 允许多个答案，逗号分隔
         }
         blankIdx++;
         return `<input type='text' class='blank-input' data-answer='${ans}' style='width:120px;margin:0 4px'/>`;
       });
-      opts = `<div style='margin-top:8px'>${html}</div>`;
-      groupQuestions.push(`<li style='margin-bottom:18px'><div style='font-size:16px;margin-bottom:6px'>${opts}</div></li>`);
-    } else if (Array.isArray(q.options)) {
+      groupQuestions.push(`<li style='margin-bottom:18px'><div style='font-size:16px;margin-bottom:6px'>${html}</div></li>`);
+      globalIndex++; // 填空题作为一道大题
+      return;
+    }
+    
+    // 跳过无题干的题目
+    if(!q.text || !q.text.trim()) return;
+    let opts = '';
+    if (Array.isArray(q.options)) {
       const name = `group${groupCount}_q${q.id}`;
       if (q.type === 'single') {
         // 单选题显示A/B/C/D

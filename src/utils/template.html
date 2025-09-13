@@ -55,11 +55,16 @@
       const nav = document.getElementById('nav-questions');
       nav.innerHTML = '';
       questions.forEach((q, i) => {
-        let sel = Array.from(q.radios).find(r=>r.checked);
+        let hasAnswer = false;
+        if(q.type === 'blank') {
+          hasAnswer = Array.from(q.blanks).some(input => input.value.trim());
+        } else {
+          hasAnswer = Array.from(q.radios).some(r => r.checked);
+        }
         const btn = document.createElement('button');
         btn.textContent = i+1;
-        btn.style.background = sel ? '#3b82f6' : '#e5e7eb';
-        btn.style.color = sel ? '#fff' : '#64748b';
+        btn.style.background = hasAnswer ? '#3b82f6' : '#e5e7eb';
+        btn.style.color = hasAnswer ? '#fff' : '#64748b';
         btn.style.border = 'none';
         btn.style.borderRadius = '8px';
         btn.style.padding = '6px 12px';
@@ -73,7 +78,7 @@
       });
     }
     document.getElementById('right').addEventListener('change', function(e){
-      if(e.target.type==='radio') {
+      if(e.target.type==='radio' || e.target.type==='checkbox' || e.target.className==='blank-input') {
         updateCompletedList();
         updateNavQuestions();
       }
@@ -190,11 +195,19 @@
     document.getElementById('btnReset').onclick = function() {
       const questions = getAllQuestions();
       questions.forEach(q => {
-        q.radios.forEach(r => r.checked=false);
+        if(q.type === 'blank') {
+          q.blanks.forEach(input => {
+            input.value = '';
+            input.style.background = '';
+          });
+        } else {
+          q.radios.forEach(r => r.checked=false);
+        }
         q.el.style.background = '';
       });
       document.getElementById('score-result').textContent = '';
       updateCompletedList();
+      updateNavQuestions();
     };
   // ...existing code...
   </script>
