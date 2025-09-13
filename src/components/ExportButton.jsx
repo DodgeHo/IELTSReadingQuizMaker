@@ -23,13 +23,24 @@ function ExportButton({ title, readingText, footnote, questions, groups }) {
           blankContent: group.blankContent,
           blankAnswers: group.blankAnswers || []
         });
-      } else if(group.type === 'table' && group.tableContent) {
-        // 表格填空题特殊处理：整个表格作为一道题
-        questions.push({
-          type: 'table',
-          tableContent: group.tableContent,
-          tableAnswers: group.tableAnswers || []
-        });
+      } else if(group.type === 'table') {
+        // 表格填空题特殊处理：优先使用新的tableData格式
+        if(group.tableData) {
+          questions.push({
+            type: 'table',
+            tableData: group.tableData,
+            tableAnswers: group.tableAnswers || [],
+            tableBoldFirstRow: group.tableBoldFirstRow || false,
+            tableBoldFirstCol: group.tableBoldFirstCol || false
+          });
+        } else if(group.tableContent) {
+          // 兼容旧的tableContent格式
+          questions.push({
+            type: 'table',
+            tableContent: group.tableContent,
+            tableAnswers: group.tableAnswers || []
+          });
+        }
       } else {
         // 其他题型按小题处理
         group.questions.forEach(q => {

@@ -75,7 +75,7 @@ function renderQuestions(questions) {
               ans = q.tableAnswers[blankIdx]; // 用分号分隔的多个答案
             }
             const currentQNum = startQNum + blankIdx;
-            tableHtml += `<a id="q${currentQNum}-anchor"></a><input class="blank" maxlength="40" name="q${currentQNum}" placeholder="${currentQNum}"/>`;
+            tableHtml += `<input type='text' class='blank-input' data-answer='${ans}' data-question-num='${currentQNum}' style='width:120px;margin:0 4px;border:1px solid #ccc;padding:2px 4px'/>`;
             blankIdx++;
           } else if (cell.type === 'mixed') {
             // 处理混合类型：文字 + [空]
@@ -87,7 +87,7 @@ function renderQuestions(questions) {
               }
               const currentQNum = startQNum + blankIdx;
               blankIdx++;
-              return `<a id="q${currentQNum}-anchor"></a><input class="blank" maxlength="40" name="q${currentQNum}" placeholder="${currentQNum}"/>`;
+              return `<input type='text' class='blank-input' data-answer='${ans}' data-question-num='${currentQNum}' style='width:120px;margin:0 4px;border:1px solid #ccc;padding:2px 4px'/>`;
             });
             tableHtml += content;
           } else if (cell.type === 'empty') {
