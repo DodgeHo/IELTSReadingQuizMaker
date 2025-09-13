@@ -4,6 +4,13 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     asar: true,
+    ignore: [
+      /^\/dist($|\/)/,            // 忽略dist文件夹  
+      /^\/\.git($|\/)/,           // 忽略.git文件夹
+      /^\/\.vscode($|\/)/,        // 忽略.vscode文件夹
+      /^\/webpack\.config\.js$/,  // 忽略webpack配置
+      /^\/笔记\.txt$/              // 忽略笔记文件
+    ],
   },
   rebuildConfig: {},
   makers: [
