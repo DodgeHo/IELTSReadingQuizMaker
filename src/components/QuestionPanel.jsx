@@ -63,8 +63,32 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                 <textarea value={q.text} onChange={e=>{
                   const newGroups = [...groups];
                   newGroups[gi].questions[qi].text = e.target.value;
+                  // 填空题自动识别空数，初始化answers数组
+                  if(group.type==='blank') {
+                    const blanks = e.target.value.match(/\[\[空(\d+)\]\]/g) || [];
+                    const blankCount = blanks.length;
+                    if(!Array.isArray(newGroups[gi].questions[qi].answers)) newGroups[gi].questions[qi].answers = [];
+                    // 自动扩展或收缩answers数组
+                    while(newGroups[gi].questions[qi].answers.length < blankCount) newGroups[gi].questions[qi].answers.push('');
+                    while(newGroups[gi].questions[qi].answers.length > blankCount) newGroups[gi].questions[qi].answers.pop();
+                  }
                   setGroups(newGroups);
-                }} style={{width:'100%',height:'48px',margin:'6px 0',fontSize:'15px',resize:'vertical'}} placeholder="题干内容"/>
+                }} style={{width:'100%',height:'48px',margin:'6px 0',fontSize:'15px',resize:'vertical'}} placeholder={group.type==='blank' ? '题干内容，空位用[[空1]]、[[空2]]等标记' : '题干内容'}/>
+                {group.type === 'blank' && Array.isArray(q.answers) && q.answers.length > 0 && (
+                  <div style={{marginLeft:'12px',marginTop:'8px',background:'#f1f5f9',borderRadius:'6px',padding:'8px'}}>
+                    <div style={{fontWeight:'bold',marginBottom:'6px'}}>设置每个空的正确答案（多个答案用英文逗号分隔，大小写不区分）：</div>
+                    {q.answers.map((ans, ai) => (
+                      <div key={ai} style={{marginBottom:'6px'}}>
+                        <label>空{ai+1}：</label>
+                        <input type="text" value={ans} onChange={e=>{
+                          const newGroups = [...groups];
+                          newGroups[gi].questions[qi].answers[ai] = e.target.value;
+                          setGroups(newGroups);
+                        }} style={{width:'60%',marginLeft:'8px',fontSize:'15px'}} placeholder="如：river,stream"/>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {group.type === 'single' && (
                   <div style={{marginLeft:'12px'}}>
                     {q.options.map((opt, oi) => (
@@ -221,6 +245,7 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                 }
                 const nextQid = newGroups[gi].questions && newGroups[gi].questions.length>0 ? newGroups[gi].questions[newGroups[gi].questions.length-1].id+1 : 1;
                 let options = [];
+                let answers = [];
                 if(newGroups[gi].type==='single') options = ['','','',''];
                 if(newGroups[gi].type==='multi') {
                   let count = Array.isArray(newGroups[gi]._newQOptions) ? newGroups[gi]._newQOptions.length : 4;
@@ -228,11 +253,17 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                 }
                 if(newGroups[gi].type==='tf') options = ['TRUE','FALSE','NOT GIVEN'];
                 if(newGroups[gi].type==='yn') options = ['YES','NO','NOT GIVEN'];
+                if(newGroups[gi].type==='blank') {
+                  // 识别空数
+                  const blanks = (newGroups[gi]._newQText.match(/\[\[空(\d+)\]\]/g) || []);
+                  answers = Array(blanks.length).fill('');
+                }
                 newGroups[gi].questions.push({
                   id: nextQid,
                   text: newGroups[gi]._newQText,
                   options,
-                  answer: newGroups[gi].type==='multi' ? [] : 0
+                  answer: newGroups[gi].type==='multi' ? [] : 0,
+                  answers
                 });
                 newGroups[gi]._newQText = '';
                 if(newGroups[gi].type==='multi') newGroups[gi]._newQOptions = Array(4).fill('');

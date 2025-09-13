@@ -93,14 +93,23 @@
       const qBlocks = document.querySelectorAll('#right ol > li');
       let questions = [];
       qBlocks.forEach((li, idx) => {
-        const radios = li.querySelectorAll('input[type=radio]');
+        const radios = li.querySelectorAll('input[type=radio],input[type=checkbox]');
+        const blanks = li.querySelectorAll('input.blank-input');
         if(radios.length) {
           questions.push({
             el: li,
             radios,
             idx,
             selected: null,
-            correct: null
+            correct: null,
+            type: radios[0].type === 'checkbox' ? 'multi' : 'single'
+          });
+        } else if(blanks.length) {
+          questions.push({
+            el: li,
+            blanks,
+            idx,
+            type: 'blank'
           });
         }
       });
@@ -122,21 +131,57 @@
       let total = questions.length;
       let detailHtml = '';
       questions.forEach((q, i) => {
-        let answer = null;
-        q.radios.forEach(r => {
-          if(r.dataset.answer==='true') answer = r.value;
-        });
-        let sel = Array.from(q.radios).find(r=>r.checked);
-        let userAns = sel ? sel.value : 'Not selected';
-        if(sel && answer && sel.value===answer) {
-          correctCount++;
-          q.el.style.background = '#e6ffed';
-          // 做对了不显示用户答案
-          detailHtml += `<div style='margin-bottom:6px;'>Q${i+1}: <span style='color:#10b981'>${answer || '-'}</span></div>`;
+        if(q.type==='blank') {
+          let blankCorrect = 0;
+          let blankTotal = q.blanks.length;
+          let blankDetails = [];
+          q.blanks.forEach((input, bi) => {
+            const correctAns = (input.dataset.answer || '').split(',').map(s=>s.trim().toLowerCase()).filter(s=>s);
+            const userAns = (input.value || '').trim().toLowerCase();
+            if(userAns && correctAns.includes(userAns)) {
+              blankCorrect++;
+              input.style.background = '#e6ffed';
+              blankDetails.push(`<span style='color:#10b981'>${input.value}</span>`);
+            } else {
+              input.style.background = userAns ? '#ffe4e6' : '';
+              blankDetails.push(`<span style='color:#ef4444;font-weight:bold'>${input.value||'-'}</span> / <span style='color:#10b981'>${input.dataset.answer||'-'}</span>`);
+            }
+          });
+          correctCount += blankCorrect;
+          detailHtml += `<div style='margin-bottom:6px;'>Q${i+1}: ${blankDetails.join(' , ')}</div>`;
         } else {
-          q.el.style.background = sel ? '#ffe4e6' : '';
-          // 做错了显示用户答案为红色
-          detailHtml += `<div style='margin-bottom:6px;'>Q${i+1}: <span style='color:#ef4444;font-weight:bold'>${userAns}</span> / <span style='color:#10b981'>${answer || '-'}</span></div>`;
+          let answer = null;
+          if(q.type==='multi') {
+            // 多选题，正确答案可能有多个
+            let correctArr = [];
+            q.radios.forEach(r => {
+              if(r.dataset.answer==='true') correctArr.push(r.value);
+            });
+            let userArr = Array.from(q.radios).filter(r=>r.checked).map(r=>r.value);
+            let isCorrect = userArr.length===correctArr.length && userArr.every(v=>correctArr.includes(v));
+            if(isCorrect && userArr.length) {
+              correctCount++;
+              q.el.style.background = '#e6ffed';
+              detailHtml += `<div style='margin-bottom:6px;'>Q${i+1}: <span style='color:#10b981'>${userArr.join(', ')}</span></div>`;
+            } else {
+              q.el.style.background = userArr.length ? '#ffe4e6' : '';
+              detailHtml += `<div style='margin-bottom:6px;'>Q${i+1}: <span style='color:#ef4444;font-weight:bold'>${userArr.join(', ')||'Not selected'}</span> / <span style='color:#10b981'>${correctArr.join(', ')||'-'}</span></div>`;
+            }
+          } else {
+            q.radios.forEach(r => {
+              if(r.dataset.answer==='true') answer = r.value;
+            });
+            let sel = Array.from(q.radios).find(r=>r.checked);
+            let userAns = sel ? sel.value : 'Not selected';
+            if(sel && answer && sel.value===answer) {
+              correctCount++;
+              q.el.style.background = '#e6ffed';
+              detailHtml += `<div style='margin-bottom:6px;'>Q${i+1}: <span style='color:#10b981'>${answer || '-'}</span></div>`;
+            } else {
+              q.el.style.background = sel ? '#ffe4e6' : '';
+              detailHtml += `<div style='margin-bottom:6px;'>Q${i+1}: <span style='color:#ef4444;font-weight:bold'>${userAns}</span> / <span style='color:#10b981'>${answer || '-'}</span></div>`;
+            }
+          }
         }
       });
       document.getElementById('score-result').innerHTML = `Correct Answers：${correctCount} / ${total}<div style='margin-top:10px;'>${detailHtml}</div>`;

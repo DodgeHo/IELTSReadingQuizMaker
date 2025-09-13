@@ -26,7 +26,20 @@ function renderQuestions(questions) {
     // 跳过无题干的题目
     if(!q.text || !q.text.trim()) return;
     let opts = '';
-    if (Array.isArray(q.options)) {
+    if (q.type === 'blank') {
+      // 填空题渲染：将[[空1]]等替换为input，正确答案写入data-answer（支持多个答案，逗号分隔）
+      let blankIdx = 0;
+      const html = q.text.replace(/\[\[空(\d+)\]\]/g, (m, n) => {
+        let ans = '';
+        if(q.answers && q.answers[blankIdx]) {
+          ans = q.answers[blankIdx]; // 允许多个答案，逗号分隔
+        }
+        blankIdx++;
+        return `<input type='text' class='blank-input' data-answer='${ans}' style='width:120px;margin:0 4px'/>`;
+      });
+      opts = `<div style='margin-top:8px'>${html}</div>`;
+      groupQuestions.push(`<li style='margin-bottom:18px'><div style='font-size:16px;margin-bottom:6px'>${opts}</div></li>`);
+    } else if (Array.isArray(q.options)) {
       const name = `group${groupCount}_q${q.id}`;
       if (q.type === 'single') {
         // 单选题显示A/B/C/D
@@ -50,8 +63,8 @@ function renderQuestions(questions) {
           return `<li style='margin-bottom:6px'><label style='display:flex;align-items:center;font-size:15px;'><input type='radio' name='${name}' value='${opt}' style='margin-right:8px'${isCorrect}/> <span>${opt}</span></label></li>`;
         }).join('') + '</ul>';
       }
+      groupQuestions.push(`<li style='margin-bottom:18px'><div style='font-size:16px;margin-bottom:6px'>${q.text}</div>${opts}</li>`);
     }
-    groupQuestions.push(`<li style='margin-bottom:18px'><div style='font-size:16px;margin-bottom:6px'>${q.text}</div>${opts}</li>`);
   });
   if(groupQuestions.length || pendingInstruction) {
     html += `<div style='border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:18px;background:#f9fafb'>`;
