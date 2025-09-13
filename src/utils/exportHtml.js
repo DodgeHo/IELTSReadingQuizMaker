@@ -52,7 +52,58 @@ function renderQuestions(questions) {
       return;
     }
     
-    // 表格填空题特殊处理：使用tableContent渲染表格，每个空都有题号
+    // 表格填空题特殊处理：使用tableData渲染表格，每个空都有题号
+    if(q.type === 'table' && q.tableData) {
+      let blankIdx = 0;
+      const startQNum = globalIndex; // 记录起始题号
+      
+      let tableHtml = '<table>';
+      q.tableData.forEach(row => {
+        tableHtml += '<tr>';
+        row.forEach(cell => {
+          tableHtml += '<td>';
+          
+          if (cell.type === 'text') {
+            tableHtml += cell.content || '';
+          } else if (cell.type === 'blank') {
+            let ans = '';
+            if(q.tableAnswers && q.tableAnswers[blankIdx]) {
+              ans = q.tableAnswers[blankIdx]; // 用分号分隔的多个答案
+            }
+            const currentQNum = startQNum + blankIdx;
+            tableHtml += `<a id="q${currentQNum}-anchor"></a><input class="blank" maxlength="40" name="q${currentQNum}" placeholder="${currentQNum}"/>`;
+            blankIdx++;
+          } else if (cell.type === 'mixed') {
+            // 处理混合类型：文字 + [空]
+            let content = cell.content || '';
+            content = content.replace(/\[空\]/g, () => {
+              let ans = '';
+              if(q.tableAnswers && q.tableAnswers[blankIdx]) {
+                ans = q.tableAnswers[blankIdx];
+              }
+              const currentQNum = startQNum + blankIdx;
+              blankIdx++;
+              return `<a id="q${currentQNum}-anchor"></a><input class="blank" maxlength="40" name="q${currentQNum}" placeholder="${currentQNum}"/>`;
+            });
+            tableHtml += content;
+          } else if (cell.type === 'empty') {
+            // 空白单元格
+            tableHtml += '';
+          }
+          
+          tableHtml += '</td>';
+        });
+        tableHtml += '</tr>';
+      });
+      tableHtml += '</table>';
+      
+      // 表格填空题单独处理，但参与题号计算
+      groupBlankContent.push(`<div style='margin-bottom:18px;padding:12px;background:#fff;border-radius:6px'><div style='font-size:16px;line-height:1.6'>${tableHtml}</div></div>`);
+      globalIndex += blankIdx; // 每个空都占一个题号
+      return;
+    }
+    
+    // 兼容旧的tableContent格式
     if(q.type === 'table' && q.tableContent) {
       let blankIdx = 0;
       const startQNum = globalIndex; // 记录起始题号
@@ -63,7 +114,7 @@ function renderQuestions(questions) {
         }
         const currentQNum = startQNum + blankIdx;
         blankIdx++;
-        return `<input type='text' class='blank-input' data-answer='${ans}' data-question-num='${currentQNum}' style='width:120px;margin:0 4px;border:1px solid #ccc;padding:2px 4px'/>`;
+        return `<a id="q${currentQNum}-anchor"></a><input class="blank" maxlength="40" name="q${currentQNum}" placeholder="${currentQNum}"/>`;
       });
       // 表格填空题单独处理，但参与题号计算
       groupBlankContent.push(`<div style='margin-bottom:18px;padding:12px;background:#fff;border-radius:6px'><div style='font-size:16px;line-height:1.6'>${html}</div></div>`);

@@ -128,65 +128,345 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                 <div style={{marginBottom:4}}>
                   <b>表格填空题操作提示：</b>
                 </div>
-                <div>在表格单元格中插入 <b>[[空1]]</b>、<b>[[空2]]</b> 等标记，可与其他文字混合（如：A [[空1]]）。</div>
-                <div>每个空的正确答案可设置多个，用分号分隔（如：<span style={{color:'#3b82f6'}}>goal;objective</span>）。</div>
-                <div style={{marginTop:4,color:'#ef4444'}}>注意：空位标记必须为 <b>[[空数字]]</b>，如 [[空1]]、[[空2]]。</div>
+                <div>• 设置表格尺寸，然后在每个单元格中输入内容</div>
+                <div>• 需要填空的地方选择"填空"，程序会自动编号</div>
+                <div>• 可以混合文字和填空，如："A组 [填空]"</div>
+                <div style={{marginTop:4,color:'#ef4444'}}>每个空的正确答案可设置多个，用分号分隔（如：goal;objective）</div>
               </div>
               
-              <label style={{fontWeight:'bold',marginBottom:'6px',display:'block'}}>表格结构（HTML表格）：</label>
-              <ReactQuill
-                theme="snow"
-                value={group.tableContent || ''}
-                onChange={value => {
-                  const newGroups = [...groups];
-                  newGroups[gi].tableContent = value;
-                  
-                  // 自动识别空数并生成answers数组（从纯文本中识别）
-                  const plainText = value.replace(/<[^>]*>/g, ''); // 去除HTML标签
-                  const blanks = plainText.match(/\[\[空(\d+)\]\]/g) || [];
-                  const blankCount = blanks.length;
-                  if(!Array.isArray(newGroups[gi].tableAnswers)) newGroups[gi].tableAnswers = [];
-                  while(newGroups[gi].tableAnswers.length < blankCount) newGroups[gi].tableAnswers.push('');
-                  while(newGroups[gi].tableAnswers.length > blankCount) newGroups[gi].tableAnswers.pop();
-                  
-                  setGroups(newGroups);
-                }}
-                style={{minHeight:'180px',marginBottom:'80px',background:'#fff'}}
-                modules={{
-                  toolbar: [
-                    [{ 'header': [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline'],
-                    [{ 'align': [] }],
-                    ['link', 'image'],
-                    ['clean'],
-                    // 添加表格工具
-                    [{ 'table': 'table' }]
-                  ]
-                }}
-                placeholder="使用表格工具创建表格，在需要填空的位置插入[[空1]]、[[空2]]等标记..."
-              />
+              {/* 表格尺寸设置 */}
+              <div style={{marginBottom:'15px',padding:'10px',background:'#f1f5f9',borderRadius:'6px'}}>
+                <label style={{fontWeight:'bold',marginBottom:'8px',display:'block'}}>表格设置：</label>
+                <div style={{display:'flex',alignItems:'center',gap:'15px'}}>
+                  <div>
+                    <label>行数：</label>
+                    <input 
+                      type="number" 
+                      min={2} 
+                      max={8} 
+                      value={group.tableRows || 3}
+                      onChange={e => {
+                        const newGroups = [...groups];
+                        const rows = parseInt(e.target.value) || 3;
+                        newGroups[gi].tableRows = rows;
+                        
+                        // 重建表格数据
+                        const cols = newGroups[gi].tableCols || 3;
+                        newGroups[gi].tableData = Array(rows).fill(null).map(() => 
+                          Array(cols).fill(null).map(() => ({type: 'text', content: ''}))
+                        );
+                        
+                        setGroups(newGroups);
+                      }}
+                      style={{width:'50px',marginLeft:'5px'}}
+                    />
+                  </div>
+                  <div>
+                    <label>列数：</label>
+                    <input 
+                      type="number" 
+                      min={2} 
+                      max={6} 
+                      value={group.tableCols || 3}
+                      onChange={e => {
+                        const newGroups = [...groups];
+                        const cols = parseInt(e.target.value) || 3;
+                        newGroups[gi].tableCols = cols;
+                        
+                        // 重建表格数据
+                        const rows = newGroups[gi].tableRows || 3;
+                        newGroups[gi].tableData = Array(rows).fill(null).map(() => 
+                          Array(cols).fill(null).map(() => ({type: 'text', content: ''}))
+                        );
+                        
+                        setGroups(newGroups);
+                      }}
+                      style={{width:'50px',marginLeft:'5px'}}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newGroups = [...groups];
+                      
+                      // 创建示例表格
+                      newGroups[gi].tableRows = 4;
+                      newGroups[gi].tableCols = 3;
+                      newGroups[gi].tableData = [
+                        [{type: 'text', content: 'Conditions'}, {type: 'text', content: 'Type of situation'}, {type: 'text', content: 'Result'}],
+                        [{type: 'text', content: 'Equal status'}, {type: 'text', content: 'eating'}, {type: 'blank', content: ''}],
+                        [{type: 'text', content: ''}, {type: 'blank', content: ''}, {type: 'text', content: 'enjoyed them but were not sitting together'}],
+                        [{type: 'mixed', content: 'A [空]'}, {type: 'text', content: 'raising money'}, {type: 'text', content: ''}]
+                      ];
+                      
+                      setGroups(newGroups);
+                    }}
+                    style={{
+                      padding:'4px 12px',
+                      fontSize:'12px',
+                      border:'1px solid #3b82f6',
+                      borderRadius:'4px',
+                      background:'#eff6ff',
+                      color:'#3b82f6',
+                      cursor:'pointer'
+                    }}
+                  >
+                    载入示例
+                  </button>
+                </div>
+              </div>
 
-              {Array.isArray(group.tableAnswers) && group.tableAnswers.length > 0 && (
-                <div>
-                  <div style={{fontWeight:'bold',marginBottom:'8px'}}>设置每个空的正确答案（多个答案用分号分隔，大小写不区分）：</div>
-                  {group.tableAnswers.map((ans, ai) => (
-                    <div key={ai} style={{display:'flex',alignItems:'center',marginBottom:'6px'}}>
-                      <span style={{minWidth:'60px',fontWeight:'bold'}}>空{ai+1}:</span>
-                      <input 
-                        type="text" 
-                        value={ans} 
-                        onChange={e => {
-                          const newGroups = [...groups];
-                          newGroups[gi].tableAnswers[ai] = e.target.value;
-                          setGroups(newGroups);
-                        }} 
-                        style={{flex:1,marginLeft:'8px',fontSize:'15px',padding:'4px 8px'}} 
-                        placeholder="如：goal;objective;target"
-                      />
-                    </div>
-                  ))}
+              {/* 可视化表格编辑器 */}
+              {group.tableData && (
+                <div style={{marginBottom:'20px'}}>
+                  <label style={{fontWeight:'bold',marginBottom:'8px',display:'block'}}>编辑表格内容：</label>
+                  <div style={{
+                    border:'1px solid #d1d5db',
+                    borderRadius:'6px',
+                    overflow:'hidden',
+                    background:'#fff'
+                  }}>
+                    <table style={{width:'100%',borderCollapse:'collapse'}}>
+                      <tbody>
+                        {group.tableData.map((row, ri) => (
+                          <tr key={ri}>
+                            {row.map((cell, ci) => (
+                              <td key={ci} style={{
+                                border:'1px solid #e5e7eb',
+                                padding:'8px',
+                                verticalAlign:'top',
+                                minWidth:'120px'
+                              }}>
+                                <div style={{marginBottom:'5px'}}>
+                                  <select
+                                    value={cell.type}
+                                    onChange={e => {
+                                      const newGroups = [...groups];
+                                      newGroups[gi].tableData[ri][ci].type = e.target.value;
+                                      if(e.target.value === 'blank') {
+                                        newGroups[gi].tableData[ri][ci].content = '';
+                                      } else if(e.target.value === 'mixed') {
+                                        newGroups[gi].tableData[ri][ci].content = '[空]';
+                                      }
+                                      setGroups(newGroups);
+                                    }}
+                                    style={{
+                                      fontSize:'11px',
+                                      padding:'2px 4px',
+                                      border:'1px solid #d1d5db',
+                                      borderRadius:'3px',
+                                      width:'100%'
+                                    }}
+                                  >
+                                    <option value="text">文字</option>
+                                    <option value="blank">填空</option>
+                                    <option value="mixed">文字+填空</option>
+                                    <option value="empty">空白</option>
+                                  </select>
+                                </div>
+                                {cell.type === 'text' && (
+                                  <input
+                                    type="text"
+                                    value={cell.content}
+                                    onChange={e => {
+                                      const newGroups = [...groups];
+                                      newGroups[gi].tableData[ri][ci].content = e.target.value;
+                                      setGroups(newGroups);
+                                    }}
+                                    placeholder="输入文字内容"
+                                    style={{
+                                      width:'100%',
+                                      padding:'4px',
+                                      border:'1px solid #e5e7eb',
+                                      borderRadius:'3px',
+                                      fontSize:'13px'
+                                    }}
+                                  />
+                                )}
+                                {cell.type === 'mixed' && (
+                                  <input
+                                    type="text"
+                                    value={cell.content}
+                                    onChange={e => {
+                                      const newGroups = [...groups];
+                                      newGroups[gi].tableData[ri][ci].content = e.target.value;
+                                      setGroups(newGroups);
+                                    }}
+                                    placeholder="如：A [空] 或 [空], e.g. stuck truck"
+                                    style={{
+                                      width:'100%',
+                                      padding:'4px',
+                                      border:'1px solid #e5e7eb',
+                                      borderRadius:'3px',
+                                      fontSize:'13px'
+                                    }}
+                                  />
+                                )}
+                                {cell.type === 'blank' && (
+                                  <div style={{
+                                    padding:'8px',
+                                    background:'#fef3c7',
+                                    border:'2px dashed #f59e0b',
+                                    borderRadius:'4px',
+                                    textAlign:'center',
+                                    fontSize:'12px',
+                                    color:'#92400e'
+                                  }}>
+                                    填空位置
+                                  </div>
+                                )}
+                                {cell.type === 'empty' && (
+                                  <div style={{
+                                    padding:'8px',
+                                    background:'#f3f4f6',
+                                    border:'1px dashed #d1d5db',
+                                    borderRadius:'4px',
+                                    textAlign:'center',
+                                    fontSize:'12px',
+                                    color:'#6b7280'
+                                  }}>
+                                    空白单元格
+                                  </div>
+                                )}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
+
+              {/* 表格预览（显示实际效果） */}
+              {group.tableData && (() => {
+                let blankIndex = 1;
+                return (
+                  <div style={{marginTop:'15px'}}>
+                    <label style={{fontWeight:'bold',marginBottom:'8px',display:'block'}}>预览效果：</label>
+                    <div style={{
+                      border:'1px solid #d1d5db',
+                      borderRadius:'6px',
+                      padding:'10px',
+                      background:'#f9fafb'
+                    }}>
+                      <table style={{width:'100%',borderCollapse:'collapse'}}>
+                        <tbody>
+                          {group.tableData.map((row, ri) => (
+                            <tr key={ri}>
+                              {row.map((cell, ci) => (
+                                <td key={ci} style={{
+                                  border:'1px solid #e5e7eb',
+                                  padding:'8px',
+                                  background:'#fff'
+                                }}>
+                                  {cell.type === 'text' && cell.content}
+                                  {cell.type === 'blank' && (
+                                    <span style={{
+                                      background:'#fef3c7',
+                                      color:'#92400e',
+                                      padding:'2px 6px',
+                                      borderRadius:'3px',
+                                      fontSize:'12px',
+                                      border:'1px dashed #f59e0b'
+                                    }}>
+                                      [{blankIndex++}]
+                                    </span>
+                                  )}
+                                  {cell.type === 'mixed' && (() => {
+                                    return cell.content.replace(/\[空\]/g, () => {
+                                      return `<span style="background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:3px;font-size:12px;border:1px dashed #f59e0b;">[${blankIndex++}]</span>`;
+                                    });
+                                  })().split(/(<span[^>]*>.*?<\/span>)/).map((part, pi) => 
+                                    part.includes('<span') ? 
+                                      <span key={pi} dangerouslySetInnerHTML={{__html: part}} /> : 
+                                      part
+                                  )}
+                                  {cell.type === 'empty' && ''}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 自动计算填空数量并生成答案输入框 */}
+              {(() => {
+                if (!group.tableData) return null;
+                
+                let blankCount = 0;
+                let mixedBlanks = 0;
+                
+                group.tableData.forEach(row => {
+                  row.forEach(cell => {
+                    if (cell.type === 'blank') {
+                      blankCount++;
+                    } else if (cell.type === 'mixed') {
+                      // 计算mixed类型中的[空]数量
+                      const matches = (cell.content || '').match(/\[空\]/g);
+                      if (matches) {
+                        mixedBlanks += matches.length;
+                      }
+                    }
+                  });
+                });
+                
+                const totalBlanks = blankCount + mixedBlanks;
+                
+                // 同步tableAnswers数组
+                if (totalBlanks > 0) {
+                  const newGroups = [...groups];
+                  if (!Array.isArray(newGroups[gi].tableAnswers)) {
+                    newGroups[gi].tableAnswers = [];
+                  }
+                  
+                  // 调整数组长度
+                  while (newGroups[gi].tableAnswers.length < totalBlanks) {
+                    newGroups[gi].tableAnswers.push('');
+                  }
+                  while (newGroups[gi].tableAnswers.length > totalBlanks) {
+                    newGroups[gi].tableAnswers.pop();
+                  }
+                  
+                  // 只在必要时更新state，避免无限循环
+                  if (newGroups[gi].tableAnswers.length !== (group.tableAnswers || []).length) {
+                    setTimeout(() => setGroups(newGroups), 0);
+                  }
+                }
+                
+                return totalBlanks > 0 ? (
+                  <div style={{marginTop:'15px',padding:'12px',background:'#f1f5f9',borderRadius:'6px'}}>
+                    <div style={{fontWeight:'bold',marginBottom:'8px'}}>
+                      设置答案（共{totalBlanks}个空，多个答案用分号分隔）：
+                    </div>
+                    {Array.from({length: totalBlanks}).map((_, ai) => (
+                      <div key={ai} style={{display:'flex',alignItems:'center',marginBottom:'6px'}}>
+                        <span style={{minWidth:'60px',fontWeight:'bold'}}>空{ai+1}:</span>
+                        <input 
+                          type="text" 
+                          value={(group.tableAnswers && group.tableAnswers[ai]) || ''} 
+                          onChange={e => {
+                            const newGroups = [...groups];
+                            if (!Array.isArray(newGroups[gi].tableAnswers)) {
+                              newGroups[gi].tableAnswers = [];
+                            }
+                            newGroups[gi].tableAnswers[ai] = e.target.value;
+                            setGroups(newGroups);
+                          }} 
+                          style={{flex:1,marginLeft:'8px',fontSize:'15px',padding:'4px 8px',border:'1px solid #d1d5db',borderRadius:'4px'}} 
+                          placeholder="如：goal;objective;target"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : null;
+              })()}
+
+
             </div>
           ) : (
             <ol>
