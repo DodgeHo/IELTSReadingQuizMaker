@@ -14,4 +14,22 @@ body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial,
 /* 段落样式（阅读区） */
 #left p { margin: 0 0 12px; line-height: 1.6; word-break: normal; overflow-wrap: normal; hyphens: none; }
 
+/* ReactQuill自适应高度样式 */
+.ql-container {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.ql-editor {
+  min-height: inherit !important;
+  max-height: none !important;
+  overflow-y: auto;
+}
+
+/* 对齐按钮样式 */
+.ql-align .ql-picker-label svg,
+.ql-align .ql-picker-item {
+  width: 18px;
+  height: 18px;
+}
+
 /* 按钮样式建议组件内用 className 控制 */

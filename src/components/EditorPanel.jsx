@@ -19,7 +19,20 @@ function EditorPanel({ title, setTitle, readingText, setReadingText, footnote, s
         theme="snow"
         value={readingText}
         onChange={setReadingText}
-        style={{ height: '65vh', marginBottom: '12px', background: '#fff' }}
+        style={{ minHeight: '65vh', marginBottom: '12px', background: '#fff' }}
+        modules={{
+          toolbar: [
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'align': [] }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'indent': '-1'}, { 'indent': '+1' }],
+            ['link', 'image'],
+            ['blockquote', 'code-block'],
+            ['clean']
+          ]
+        }}
         placeholder="请输入阅读材料，可使用格式化工具栏..."
       />
       <div style={{marginTop:'10px'}}>

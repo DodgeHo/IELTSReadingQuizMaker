@@ -40,7 +40,17 @@ function QuestionPanel({ groups, setGroups, showToast }) {
               newGroups[gi].instruction = value;
               setGroups(newGroups);
             }}
-            style={{ height: '80px', marginBottom: '60px', background: '#fff' }}
+            style={{ minHeight: '80px', marginBottom: '60px', background: '#fff' }}
+            modules={{
+              toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'align': [] }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['link', 'image'],
+                ['clean']
+              ]
+            }}
             placeholder="输入大题说明，可使用格式化工具栏..."
           />
           
@@ -74,7 +84,17 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                   
                   setGroups(newGroups);
                 }}
-                style={{height:'120px',marginBottom:'80px',background:'#fff'}}
+                style={{minHeight:'120px',marginBottom:'80px',background:'#fff'}}
+                modules={{
+                  toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'align': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    ['clean']
+                  ]
+                }}
                 placeholder="输入题目内容，用[[空1]]、[[空2]]等标记空位，可使用格式化工具栏..."
               />
               
