@@ -13,6 +13,7 @@ function QuestionPanel({ groups, setGroups, showToast }) {
     table: 'Complete the table below.\nChoose NO MORE THAN TWO WORDS from the passage for each answer.\nWrite your answers in boxes on your answer sheet.',
     matching: 'Match each statement with the correct option. Drag the correct letter into each box. You may use any letter more than once if allowed.'
   };
+
   const [newGroupType, setNewGroupType] = useState('single');
   const [newGroupInstruction, setNewGroupInstruction] = useState(typeInstructions.single);
   // 双选题选项数
@@ -236,7 +237,19 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                     background:'#f9fafb'
                   }}>
                     <div style={{marginBottom:'15px'}}>
-                      <div style={{fontWeight:'bold',marginBottom:'8px'}}>选项：</div>
+                      <div style={{fontWeight:'bold',marginBottom:'8px'}}>
+                        选项：
+                        {group.matchingRepeatable && (
+                          <span style={{color:'#059669',fontWeight:'normal',fontSize:'12px',marginLeft:'8px'}}>
+                            (选项可重复使用)
+                          </span>
+                        )}
+                        {!group.matchingRepeatable && (
+                          <span style={{color:'#dc2626',fontWeight:'normal',fontSize:'12px',marginLeft:'8px'}}>
+                            (选项仅可使用一次)
+                          </span>
+                        )}
+                      </div>
                       <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginBottom:'15px'}}>
                         {group.matchingOptions.map((opt, oi) => (
                           <span key={oi} style={{
@@ -253,7 +266,7 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                       <div style={{fontWeight:'bold',marginBottom:'8px'}}>题目：</div>
                       <div style={{fontSize:'16px',lineHeight:'1.6'}} dangerouslySetInnerHTML={{
                         __html: group.matchingContent.replace(/\[\[空(\d+)\]\]/g, (m, n) => {
-                          return `<span style="background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:3px;font-size:12px;border:1px dashed #f59e0b;">[${n}]</span>`;
+                          return `<span style="background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:3px;font-size:12px;border:1px dashed #f59e0b;">[题${n}]</span>`;
                         })
                       }} />
                     </div>
