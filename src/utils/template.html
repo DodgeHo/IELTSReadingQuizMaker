@@ -115,111 +115,127 @@
     });
     // 监听匹配题的拖拽事件
     document.addEventListener('dragstart', function(e) {
-      if(e.target.classList.contains('matching-option')) {
-        e.dataTransfer.setData('type', 'option');
-        e.dataTransfer.setData('option-index', e.target.dataset.oi);
-        e.dataTransfer.setData('text/plain', e.target.textContent);
-      }
-      if(e.target.classList.contains('matching-drop') && e.target.getAttribute('data-student-answer')) {
-        e.dataTransfer.setData('type', 'drop');
-        e.dataTransfer.setData('option-index', e.target.getAttribute('data-student-answer'));
-        e.dataTransfer.setData('text/plain', e.target.textContent);
-        window._dragSourceDrop = e.target;
+      if(e.target.classList.contains('matching-slot')) {
+        const type = e.target.dataset.type;
+        if(type === 'option') {
+          e.dataTransfer.setData('type', 'option');
+          e.dataTransfer.setData('option-index', e.target.dataset.oi);
+          e.dataTransfer.setData('text/plain', e.target.textContent);
+        } else if(type === 'drop' && e.target.getAttribute('data-answer')) {
+          e.dataTransfer.setData('type', 'drop');
+          e.dataTransfer.setData('option-index', e.target.getAttribute('data-answer'));
+          e.dataTransfer.setData('text/plain', e.target.textContent);
+          window._dragSourceDrop = e.target;
+        }
       }
     });
     
     document.addEventListener('dragover', function(e) {
-      if(e.target.classList.contains('matching-drop')) {
+      if(e.target.classList.contains('matching-slot')) {
         e.preventDefault();
       }
     });
     
     document.addEventListener('drop', function(e) {
-      if(e.target.classList.contains('matching-drop')) {
+      if(e.target.classList.contains('matching-slot')) {
         e.preventDefault();
         const type = e.dataTransfer.getData('type');
         const text = e.dataTransfer.getData('text/plain');
         const optionIndex = e.dataTransfer.getData('option-index');
         const container = e.target.closest('.matching-container');
         const isRepeatable = container.dataset.repeatable === 'true';
-        // 拖拽源是选项区
-        if(type === 'option') {
-          if(!isRepeatable) {
-            // 检查该选项是否已被其他空选中
-            const usedDrops = container.querySelectorAll('.matching-drop[data-student-answer="' + optionIndex + '"]');
-            if(usedDrops.length > 0) {
-              // 已被选，禁止再次拖拽
-              return;
-            }
-          }
-          if (text && text.trim()) {
-            // 替换时，先恢复原选项区显示
+        // 拖拽到题干空格slot
+        if(e.target.dataset.type === 'drop') {
+          if(type === 'option') {
+            // 选项拖到空格
             if(!isRepeatable) {
-              const oldAnswer = e.target.getAttribute('data-student-answer');
-              if(oldAnswer !== null && oldAnswer !== '' && oldAnswer !== optionIndex) {
-                const oldOptions = container.querySelectorAll('.matching-option[data-oi="' + oldAnswer + '"]');
-                oldOptions.forEach(opt => opt.style.display = 'inline-block');
+              // 检查该选项是否已被其他空选中
+              const usedDrops = container.querySelectorAll('.matching-slot[data-type="drop"][data-answer="' + optionIndex + '"]');
+              if(usedDrops.length) return;
+            }
+            if(text && text.trim()) {
+              e.target.textContent = text;
+              e.target.setAttribute('data-answer', optionIndex);
+              e.target.setAttribute('data-student-answer', optionIndex);
+              e.target.style.background = '#fff3a3';
+              e.target.style.color = '#111';
+            }
+          } else if(type === 'drop') {
+            // 空格拖到空格，交换或移动
+            const sourceText = text;
+            const sourceIndex = optionIndex;
+            const targetOldIndex = e.target.getAttribute('data-answer');
+            const targetOldText = e.target.textContent;
+            // 源空格
+            const sourceDrop = document.querySelector('.matching-slot[data-type="drop"][data-answer="' + sourceIndex + '"]');
+            if(sourceDrop) {
+              // 交换内容
+              sourceDrop.textContent = targetOldText.startsWith('[') ? '[' + sourceDrop.getAttribute('data-question-num') + ']' : targetOldText;
+              sourceDrop.setAttribute('data-answer', targetOldIndex || '');
+              if(targetOldIndex) {
+                sourceDrop.setAttribute('data-student-answer', targetOldIndex);
+                sourceDrop.style.background = '#fff3a3';
+                sourceDrop.style.color = '#111';
+              } else {
+                sourceDrop.removeAttribute('data-student-answer');
+                sourceDrop.style.background = '#E2F2FE';
+                sourceDrop.style.color = '#92400e';
               }
-            }
-            e.target.textContent = text;
-            e.target.style.background = '#e0e7ff'; // 绿色背景表示已放置
-            e.target.setAttribute('data-student-answer', optionIndex);
-            // 不可复选时，隐藏选项区对应选项
-            if(!isRepeatable) {
-              const allOptions = container.querySelectorAll('.matching-option[data-oi="' + optionIndex + '"]');
-              allOptions.forEach(opt => opt.style.display = 'none');
-            }
-          }
-        }
-        // 拖拽源是另一个空格，实现交换或移动
-        if(type === 'drop') {
-          const sourceText = text;
-          const sourceIndex = optionIndex;
-          // 目标空格原有选项
-          const targetOldIndex = e.target.getAttribute('data-student-answer');
-          const targetOldText = e.target.textContent;
-          // 源空格
-          const sourceDrop = document.querySelector('.matching-drop[data-student-answer="' + sourceIndex + '"]');
-          if(sourceDrop) {
-            // 目标空格为空，移动
-            if(!targetOldIndex || targetOldIndex === '') {
-              // 源空格变空
-              sourceDrop.textContent = '[' + sourceDrop.getAttribute('data-question-num') + ']';
-              sourceDrop.style.background = '#E2F2FE';
-              sourceDrop.removeAttribute('data-student-answer');
-              // 目标空格填入选项
-              e.target.textContent = sourceText;
-              e.target.style.background = '#e0e7ff';
-              e.target.setAttribute('data-student-answer', sourceIndex);
-            } else {
-              // 交换
-              // 源空格填入目标内容
-              sourceDrop.textContent = targetOldText;
-              sourceDrop.setAttribute('data-student-answer', targetOldIndex);
-              sourceDrop.style.background = '#e0e7ff';
               // 目标空格填入源内容
               e.target.textContent = sourceText;
+              e.target.setAttribute('data-answer', sourceIndex);
               e.target.setAttribute('data-student-answer', sourceIndex);
-              e.target.style.background = '#e0e7ff';
+              e.target.style.background = '#fff3a3';
+              e.target.style.color = '#111';
             }
           }
+          // 不可复选时，更新选项区显示
+          if(!isRepeatable) {
+            const allOptions = container.querySelectorAll('.matching-slot[data-type="option"]');
+            allOptions.forEach(opt => opt.style.display = 'inline-block');
+            const drops = container.querySelectorAll('.matching-slot[data-type="drop"][data-answer]');
+            drops.forEach(drop => {
+              const idx = drop.getAttribute('data-answer');
+              if(idx !== null && idx !== '') {
+                const opt = container.querySelector('.matching-slot[data-type="option"][data-oi="' + idx + '"]');
+                if(opt) opt.style.display = 'none';
+              }
+            });
+          }
+          updateNavQuestions();
         }
-        // 不可复选时，更新选项区显示
-        if(!isRepeatable) {
-          // 先全部显示
-          const allOptions = container.querySelectorAll('.matching-option');
-          allOptions.forEach(opt => opt.style.display = 'inline-block');
-          // 再隐藏已被选的
-          const drops = container.querySelectorAll('.matching-drop[data-student-answer]');
-          drops.forEach(drop => {
-            const idx = drop.getAttribute('data-student-answer');
-            if(idx !== null && idx !== '') {
-              const opt = container.querySelector('.matching-option[data-oi="' + idx + '"]');
-              if(opt) opt.style.display = 'none';
+        // 拖拽到选项区slot（data-type=option），清空空格，把选项恢复到选项区
+        if(e.target.dataset.type === 'option') {
+          if(type === 'drop') {
+            // 空格拖到选项区slot
+            const sourceIndex = optionIndex;
+            // 找到源空格
+            const sourceDrop = document.querySelector('.matching-slot[data-type="drop"][data-answer="' + sourceIndex + '"]');
+            if(sourceDrop) {
+              sourceDrop.textContent = '[' + sourceDrop.getAttribute('data-question-num') + ']';
+              sourceDrop.setAttribute('data-answer', '');
+              sourceDrop.removeAttribute('data-student-answer');
+              sourceDrop.style.background = '#E2F2FE';
+              sourceDrop.style.color = '#92400e';
             }
-          });
+            // 选项区slot恢复显示
+            e.target.style.display = 'inline-block';
+          }
+          // 不可复选时，更新选项区显示
+          if(!isRepeatable) {
+            const allOptions = container.querySelectorAll('.matching-slot[data-type="option"]');
+            allOptions.forEach(opt => opt.style.display = 'inline-block');
+            const drops = container.querySelectorAll('.matching-slot[data-type="drop"][data-answer]');
+            drops.forEach(drop => {
+              const idx = drop.getAttribute('data-answer');
+              if(idx !== null && idx !== '') {
+                const opt = container.querySelector('.matching-slot[data-type="option"][data-oi="' + idx + '"]');
+                if(opt) opt.style.display = 'none';
+              }
+            });
+          }
+          updateNavQuestions();
         }
-        updateNavQuestions();
       }
     });
     
@@ -291,9 +307,11 @@
       });
 
       // 处理匹配题（每个空位单独作为一道题）
-      matchingDrops.forEach((drop, idx) => {
+      // 统一slot结构后，处理所有题干空格slot
+      const matchingSlots = document.querySelectorAll('#right .matching-slot[data-type="drop"]');
+      matchingSlots.forEach((drop, idx) => {
         questions.push({
-          el: drop.closest('div'), // 找到包含的div
+          el: drop.closest('div'),
           drop: drop,
           idx: questions.length,
           type: 'matching',
