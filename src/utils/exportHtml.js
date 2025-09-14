@@ -155,8 +155,8 @@ function renderQuestions(questions) {
         }
         const currentQNum = startQNum + blankIdx;
         blankIdx++;
-        // 统一初始背景色为#E2F2FE，内容垂直居中，无白条
-        return `<span class="matching-drop" data-qi="${blankIdx-1}" data-answer="${ans}" data-question-num="${currentQNum}" style="display:inline-block;min-width:120px;height:32px;background:#E2F2FE;border:1px dashed #0b80f5ff;border-radius:4px;margin:0 4px;text-align:center;line-height:32px;color:#000;font-weight:bold;cursor:pointer;vertical-align:middle;">[${currentQNum}]</span>`;
+        // 始终draggable，内容可拖拽
+        return `<span class="matching-drop" draggable="true" data-qi="${blankIdx-1}" data-answer="${ans}" data-question-num="${currentQNum}" style="display:inline-block;min-width:120px;height:32px;background:#E2F2FE;border:1px dashed #0b80f5ff;border-radius:4px;margin:0 4px;text-align:center;line-height:32px;color:#000;font-weight:bold;cursor:pointer;vertical-align:middle;">[${currentQNum}]</span>`;
       });
       matchHtml += html + '</div></div>'; // 关闭匹配题容器
       
