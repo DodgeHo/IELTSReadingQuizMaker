@@ -33,5 +33,9 @@ Thumbs.db
 # Electron Forge
 out/
 
+# user data
+output/
+projects/
+
 # Others
 *.log

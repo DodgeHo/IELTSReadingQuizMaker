@@ -410,25 +410,10 @@
     });
 
     document.addEventListener('dragover', function(e) {
-      if (e.target.classList.contains('matching-drop')) {
+      if(e.target.classList.contains('matching-drop')) {
         e.preventDefault();
       }
-      // 拖拽到屏幕空白处（不是空格/选项区），清空源空格
-      if(window._dragSourceDrop && (!e.target.classList.contains('matching-drop') && !e.target.classList.contains('matching-option'))) {
-        const sourceDrop = window._dragSourceDrop;
-        const container = sourceDrop.closest('.matching-container');
-        const isRepeatable = container.dataset.repeatable === 'true';
-        const oldStudentAnswer = sourceDrop.getAttribute('data-student-answer');
-        sourceDrop.textContent = '[' + sourceDrop.getAttribute('data-question-num') + ']';
-        sourceDrop.style.background = '#E2F2FE';
-        sourceDrop.removeAttribute('data-student-answer');
-        // 不可复选时，恢复选项区对应选项显示
-        if(!isRepeatable && oldStudentAnswer !== null && oldStudentAnswer !== '') {
-          const allOptions = container.querySelectorAll('.matching-option[data-oi="' + oldStudentAnswer + '"]');
-          allOptions.forEach(opt => opt.style.display = 'inline-block');
-        }
-        window._dragSourceDrop = null;
-      }
+      // 不在dragover里处理清空逻辑
     });
   // 拖拽结束后清理拖拽源
   window._dragSourceDrop = null;
