@@ -192,10 +192,10 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                   }}
                   style={{width:'100%',minHeight:'80px',fontSize:'15px',borderRadius:'6px',border:'1px solid #d1d5db',padding:'8px'}}
                   placeholder="每行输入一个选项，例如：
-A. Paragraph A
-B. Paragraph B
-C. Paragraph C
-D. Paragraph D"
+                    A. Paragraph A
+                    B. Paragraph B
+                    C. Paragraph C
+                    D. Paragraph D"
                 />
               </div>
 

@@ -131,10 +131,13 @@ function renderQuestions(questions) {
       let blankIdx = 0;
       const startQNum = globalIndex; // 记录起始题号
       
+      // 匹配题容器，包含可重复性数据
+      let matchHtml = `<div class="matching-container" data-repeatable="${q.matchingRepeatable || false}">`;
+      
       // 选项区
-      let matchHtml = '<div style="margin-bottom:15px;"><div style="font-weight:bold;margin-bottom:8px;">选项：</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;">';
+      matchHtml += '<div style="margin-bottom:15px;"><div style="font-weight:bold;margin-bottom:8px;">选项：</div><div class="matching-options" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;">';
       q.matchingOptions.forEach((opt, oi) => {
-        matchHtml += `<span draggable="true" data-oi="${oi}" style="padding:6px 12px;background:#e0e7ff;border-radius:4px;cursor:grab;font-weight:bold;">${opt}</span>`;
+        matchHtml += `<div class="matching-option" draggable="true" data-oi="${oi}" style="padding:6px 12px;background:#e0e7ff;border-radius:4px;cursor:grab;font-weight:bold;">${opt}</div>`;
       });
       matchHtml += '</div></div>';
       
@@ -147,9 +150,9 @@ function renderQuestions(questions) {
         }
         const currentQNum = startQNum + blankIdx;
         blankIdx++;
-        return `<span class="matching-drop" data-qi="${blankIdx-1}" style="display:inline-block;min-width:80px;height:32px;background:#fef3c7;border:1px dashed #f59e0b;border-radius:4px;margin:0 4px;text-align:center;line-height:32px;color:#92400e;font-weight:bold;cursor:pointer;" data-answer="${ans}" data-question-num="${currentQNum}">[${currentQNum}]</span>`;
+        return `<span class="matching-drop" data-qi="${blankIdx-1}" data-answer="${ans}" data-question-num="${currentQNum}" style="display:inline-block;min-width:80px;height:32px;background:#fef3c7;border:1px dashed #f59e0b;border-radius:4px;margin:0 4px;text-align:center;line-height:32px;color:#92400e;font-weight:bold;cursor:pointer;">[拖拽选项到此]</span><button class="matching-clear" data-qi="${blankIdx-1}" style="background:#e5e7eb;border:none;border-radius:3px;padding:2px 6px;color:#64748b;font-size:12px;cursor:pointer;margin-left:4px;">清空</button>`;
       });
-      matchHtml += html + '</div>';
+      matchHtml += html + '</div></div>'; // 关闭匹配题容器
       
       groupBlankContent.push(`<div style='margin-bottom:18px;padding:12px;background:#fff;border-radius:6px'><div style='font-size:16px;line-height:1.6'>${matchHtml}</div></div>`);
       globalIndex += blankIdx; // 每个空都占一个题号

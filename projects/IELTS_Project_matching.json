@@ -11,16 +11,17 @@
       "_newQText": "",
       "_newQOptions": [],
       "_newQAnswer": 0,
-      "matchingContent": "<p>14 Paragraph A<span style=\"background-color: rgb(224, 242, 254); color: rgb(239, 68, 68);\">[[空1]]</span></p><p>15 Paragraph B <span style=\"background-color: rgb(224, 242, 254); color: rgb(239, 68, 68);\">[[空2]]</span></p><p>16 Paragraph C <span style=\"background-color: rgb(224, 242, 254); color: rgb(239, 68, 68);\">[[空3]]</span></p><p>17 Paragraph D <span style=\"background-color: rgb(224, 242, 254); color: rgb(239, 68, 68);\">[[空4]]</span></p><p>18 Paragraph E <span style=\"background-color: rgb(224, 242, 254); color: rgb(239, 68, 68);\">[[空5]]</span></p><p>19 Paragraph F <span style=\"background-color: rgb(224, 242, 254); color: rgb(239, 68, 68);\">[[空6]]</span></p><p>20 Paragraph G <span style=\"background-color: rgb(224, 242, 254); color: rgb(239, 68, 68);\">[[空7]]</span></p><p><br></p>",
+      "matchingContent": "<p>14 Paragraph A<span style=\"color: rgb(239, 68, 68); background-color: rgb(224, 242, 254);\">[[空1]]</span></p><p>15 Paragraph B <span style=\"color: rgb(239, 68, 68); background-color: rgb(224, 242, 254);\">[[空2]]</span></p><p>16 Paragraph C <span style=\"color: rgb(239, 68, 68); background-color: rgb(224, 242, 254);\">[[空3]]</span></p><p>17 Paragraph D <span style=\"color: rgb(239, 68, 68); background-color: rgb(224, 242, 254);\">[[空4]]</span></p><p>18 Paragraph E <span style=\"color: rgb(239, 68, 68); background-color: rgb(224, 242, 254);\">[[空5]]</span></p><p>19 Paragraph F <span style=\"color: rgb(239, 68, 68); background-color: rgb(224, 242, 254);\">[[空6]]</span></p><p>20 Paragraph G <span style=\"color: rgb(239, 68, 68); background-color: rgb(224, 242, 254);\">[[空7]]</span></p>",
       "matchingAnswers": [
         "2",
-        "1",
         "0",
+        "1",
+        "3",
         "8",
-        "5",
-        "7",
-        "4"
+        "9",
+        "7"
       ],
+      "matchingRepeatable": false,
       "matchingOptions": [
         "i The best moment to migrate",
         "ii The unexplained rejection of closer feeding grounds",
