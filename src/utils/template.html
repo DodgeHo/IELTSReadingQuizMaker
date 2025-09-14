@@ -345,7 +345,11 @@
             detailHtml += `<div style='margin-bottom:4px'>Q${qNum}: <span style='color:#10b981'>${q.drop.textContent}</span></div>`;
           } else {
             q.drop.style.background = userAns ? '#ffe4e6' : '';
-            detailHtml += `<div style='margin-bottom:4px'>Q${qNum}: <span style='color:#ef4444;font-weight:bold'>${q.drop.textContent||'-'}</span> / <span style='color:#10b981'>正确答案</span></div>`;
+            // 获取正确答案的文本
+            const container = q.drop.closest('.matching-container');
+            const correctOption = container.querySelector('.matching-option[data-oi="' + correctAns + '"]');
+            const correctText = correctOption ? correctOption.textContent : correctAns;
+            detailHtml += `<div style='margin-bottom:4px'>Q${qNum}: <span style='color:#ef4444;font-weight:bold'>${q.drop.textContent||'-'}</span> / <span style='color:#10b981'>${correctText}</span></div>`;
           }
         } else {
           let answer = null;

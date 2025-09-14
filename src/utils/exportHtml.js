@@ -214,7 +214,7 @@ function renderQuestions(questions) {
 }
 
 export async function exportHtml({ title, readingText, footnote, questions }) {
-  let leftContent = `<h2>${title || '阅读材料'}</h2><div>${readingText}</div>`;
+  let leftContent = `<h2>${title || 'Reading Materials'}</h2><div>${readingText}</div>`;
   
   // 添加底部批注（如果存在）
   if (footnote && footnote.trim()) {
