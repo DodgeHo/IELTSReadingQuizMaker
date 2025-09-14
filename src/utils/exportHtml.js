@@ -137,7 +137,12 @@ function renderQuestions(questions) {
       // 选项区
       matchHtml += '<div style="margin-bottom:15px;"><div style="font-weight:bold;margin-bottom:8px;">选项：</div><div class="matching-options" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;">';
       q.matchingOptions.forEach((opt, oi) => {
-        matchHtml += `<div class="matching-option" draggable="true" data-oi="${oi}" style="padding:6px 12px;background:#e0e7ff;border-radius:4px;cursor:grab;font-weight:bold;">${opt}</div>`;
+        // 判断该选项是否已被某个空选中（仅在不可复选时）
+        let hideOpt = false;
+        if(!q.matchingRepeatable && Array.isArray(q.matchingAnswers)) {
+          hideOpt = q.matchingAnswers.some(ans => ans === oi);
+        }
+        matchHtml += `<div class="matching-option" draggable="true" data-oi="${oi}" style="padding:6px 12px;background:#e0e7ff;border-radius:4px;cursor:grab;font-weight:bold;${hideOpt ? 'display:none;' : ''}">${opt}</div>`;
       });
       matchHtml += '</div></div>';
       
@@ -150,7 +155,7 @@ function renderQuestions(questions) {
         }
         const currentQNum = startQNum + blankIdx;
         blankIdx++;
-        return `<span class="matching-drop" data-qi="${blankIdx-1}" data-answer="${ans}" data-question-num="${currentQNum}" style="display:inline-block;min-width:80px;height:32px;background:#fef3c7;border:1px dashed #f59e0b;border-radius:4px;margin:0 4px;text-align:center;line-height:32px;color:#92400e;font-weight:bold;cursor:pointer;">[拖拽选项到此]</span><button class="matching-clear" data-qi="${blankIdx-1}" style="background:#e5e7eb;border:none;border-radius:3px;padding:2px 6px;color:#64748b;font-size:12px;cursor:pointer;margin-left:4px;">清空</button>`;
+        return `<span class="matching-drop" data-qi="${blankIdx-1}" data-answer="${ans}" data-question-num="${currentQNum}" style="display:inline-block;min-width:80px;height:32px;background:#fef3c7;border:1px dashed #f59e0b;border-radius:4px;margin:0 4px;text-align:center;line-height:32px;color:#92400e;font-weight:bold;cursor:pointer;">${currentQNum}</span><button class="matching-clear" data-qi="${blankIdx-1}" style="background:#e5e7eb;border:none;border-radius:3px;padding:2px 6px;color:#64748b;font-size:12px;cursor:pointer;margin-left:4px;">清空</button>`;
       });
       matchHtml += html + '</div></div>'; // 关闭匹配题容器
       
