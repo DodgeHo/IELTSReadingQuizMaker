@@ -155,7 +155,7 @@ function renderQuestions(questions) {
         }
         const currentQNum = startQNum + blankIdx;
         blankIdx++;
-        return `<span class="matching-drop" data-qi="${blankIdx-1}" data-answer="${ans}" data-question-num="${currentQNum}" style="display:inline-block;min-width:80px;height:32px;background:#fef3c7;border:1px dashed #f59e0b;border-radius:4px;margin:0 4px;text-align:center;line-height:32px;color:#92400e;font-weight:bold;cursor:pointer;">${currentQNum}</span>`;
+        return `<span class="matching-drop" data-qi="${blankIdx-1}" data-answer="${ans}" data-question-num="${currentQNum}" style="display:inline-block;min-width:180px;height:32px;border:1px dashed #5587f4ff;border-radius:4px;margin:0 4px;text-align:center;line-height:32px;color:#6b7280;font-weight:bold;cursor:pointer;">${currentQNum}</span>`;
       });
       matchHtml += html + '</div></div>'; // 关闭匹配题容器
       
