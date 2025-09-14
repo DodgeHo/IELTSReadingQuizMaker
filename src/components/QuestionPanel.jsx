@@ -11,6 +11,7 @@ function QuestionPanel({ groups, setGroups, showToast }) {
     yn: `Do the following statements agree with the claims of the writer in Reading Passage?\n\nIn boxes on your answer sheet, write\nYES if the statement agrees with the claims of the writer\nNO if the statement contradicts the claims of the writer\nNOT GIVEN if it is impossible to say what the writer thinks about this`,
     blank: 'Complete the sentences below. Write NO MORE THAN TWO WORDS from the passage for each answer.',
     table: 'Complete the table below.\nChoose NO MORE THAN TWO WORDS from the passage for each answer.\nWrite your answers in boxes on your answer sheet.',
+    matching: 'Match each statement with the correct option. Drag the correct letter into each box. You may use any letter more than once if allowed.'
   };
   const [newGroupType, setNewGroupType] = useState('single');
   const [newGroupInstruction, setNewGroupInstruction] = useState(typeInstructions.single);
@@ -119,6 +120,144 @@ function QuestionPanel({ groups, setGroups, showToast }) {
                       />
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          ) : group.type === 'matching' ? (
+            <div style={{background:'#f6f7fb',borderRadius:6,padding:'12px',marginBottom:'12px'}}>
+              <div style={{marginBottom:'8px',color:'#64748b',fontSize:15,background:'#e0f2fe',borderRadius:6,padding:'8px 12px'}}>
+                <div style={{marginBottom:4}}>
+                  <b>匹配题操作提示：</b>
+                </div>
+                <div>在题干中插入 <b>[[空1]]</b>、<b>[[空2]]</b> 等标记，即可自动生成填空位。</div>
+                <div>设置选项列表，然后为每个空选择正确答案。</div>
+                <div style={{marginTop:4,color:'#ef4444'}}>注意：空位标记必须为 <b>[[空数字]]</b>，且从1开始计数，如 [[空1]]、[[空2]]。</div>
+              </div>
+              
+              <label style={{fontWeight:'bold',marginBottom:'6px',display:'block'}}>题目内容（整段编辑）：</label>
+              <ReactQuill
+                theme="snow"
+                value={group.matchingContent || ''}
+                onChange={value => {
+                  const newGroups = [...groups];
+                  newGroups[gi].matchingContent = value;
+                  
+                  // 自动识别空数并生成answers数组（从纯文本中识别）
+                  const plainText = value.replace(/<[^>]*>/g, ''); // 去除HTML标签
+                  const blanks = plainText.match(/\[\[空(\d+)\]\]/g) || [];
+                  const blankCount = blanks.length;
+                  if(!Array.isArray(newGroups[gi].matchingAnswers)) newGroups[gi].matchingAnswers = [];
+                  while(newGroups[gi].matchingAnswers.length < blankCount) newGroups[gi].matchingAnswers.push('');
+                  while(newGroups[gi].matchingAnswers.length > blankCount) newGroups[gi].matchingAnswers.pop();
+                  
+                  setGroups(newGroups);
+                }}
+                style={{minHeight:'120px',marginBottom:'80px',background:'#fff'}}
+                modules={{
+                  toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'align': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    ['clean']
+                  ]
+                }}
+                placeholder="输入题目内容，用[[空1]]、[[空2]]等标记空位，可使用格式化工具栏..."
+              />
+              
+              <div style={{marginBottom:'15px'}}>
+                <label style={{fontWeight:'bold',marginBottom:'6px',display:'block'}}>选项设置：</label>
+                <div style={{display:'flex',alignItems:'center',gap:'15px',marginBottom:'10px'}}>
+                  <label style={{display:'flex',alignItems:'center',cursor:'pointer'}}>
+                    <input 
+                      type="checkbox"
+                      checked={group.matchingRepeatable || false}
+                      onChange={e => {
+                        const newGroups = [...groups];
+                        newGroups[gi].matchingRepeatable = e.target.checked;
+                        setGroups(newGroups);
+                      }}
+                      style={{marginRight:'6px'}}
+                    />
+                    选项可重复使用
+                  </label>
+                </div>
+                <textarea
+                  value={group.matchingOptions ? group.matchingOptions.join('\n') : ''}
+                  onChange={e => {
+                    const newGroups = [...groups];
+                    newGroups[gi].matchingOptions = e.target.value.split(/\r?\n/).filter(x=>x.trim()!=='');
+                    setGroups(newGroups);
+                  }}
+                  style={{width:'100%',minHeight:'80px',fontSize:'15px',borderRadius:'6px',border:'1px solid #d1d5db',padding:'8px'}}
+                  placeholder="每行输入一个选项，例如：
+A. Paragraph A
+B. Paragraph B
+C. Paragraph C
+D. Paragraph D"
+                />
+              </div>
+
+              {/* 正确答案设置区 */}
+              {Array.isArray(group.matchingAnswers) && group.matchingAnswers.length > 0 && Array.isArray(group.matchingOptions) && group.matchingOptions.length > 0 && (
+                <div style={{marginTop:'12px',background:'#f1f5f9',borderRadius:'6px',padding:'8px'}}>
+                  <div style={{fontWeight:'bold',marginBottom:'8px'}}>设置每个空的正确答案：</div>
+                  {group.matchingAnswers.map((ans, ai) => (
+                    <div key={ai} style={{marginBottom:'6px',display:'flex',alignItems:'center'}}>
+                      <label style={{minWidth:'50px'}}>空{ai+1}：</label>
+                      <select
+                        value={ans || ''}
+                        onChange={e => {
+                          const newGroups = [...groups];
+                          newGroups[gi].matchingAnswers[ai] = e.target.value;
+                          setGroups(newGroups);
+                        }}
+                        style={{flex:1,marginLeft:'8px',fontSize:'15px',padding:'4px 8px',border:'1px solid #d1d5db',borderRadius:'4px'}}
+                      >
+                        <option value="">请选择正确答案</option>
+                        {group.matchingOptions.map((opt, oi) => (
+                          <option key={oi} value={oi}>{opt}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 预览区（显示实际效果） */}
+              {group.matchingContent && Array.isArray(group.matchingOptions) && group.matchingOptions.length > 0 && (
+                <div style={{marginTop:'15px'}}>
+                  <label style={{fontWeight:'bold',marginBottom:'8px',display:'block'}}>预览效果：</label>
+                  <div style={{
+                    border:'1px solid #d1d5db',
+                    borderRadius:'6px',
+                    padding:'10px',
+                    background:'#f9fafb'
+                  }}>
+                    <div style={{marginBottom:'15px'}}>
+                      <div style={{fontWeight:'bold',marginBottom:'8px'}}>选项：</div>
+                      <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginBottom:'15px'}}>
+                        {group.matchingOptions.map((opt, oi) => (
+                          <span key={oi} style={{
+                            padding:'4px 8px',
+                            background:'#e0e7ff',
+                            borderRadius:'4px',
+                            fontSize:'14px',
+                            fontWeight:'bold'
+                          }}>{opt}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{fontWeight:'bold',marginBottom:'8px'}}>题目：</div>
+                      <div style={{fontSize:'16px',lineHeight:'1.6'}} dangerouslySetInnerHTML={{
+                        __html: group.matchingContent.replace(/\[\[空(\d+)\]\]/g, (m, n) => {
+                          return `<span style="background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:3px;font-size:12px;border:1px dashed #f59e0b;">[${n}]</span>`;
+                        })
+                      }} />
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -697,8 +836,8 @@ function QuestionPanel({ groups, setGroups, showToast }) {
           </ol>
           )}
           
-          {/* 非填空题的小题添加区 */}
-          {group.type !== 'blank' && group.type !== 'table' && (
+          {/* 非填空题、表格题、匹配题的小题添加区 */}
+          {group.type !== 'blank' && group.type !== 'table' && group.type !== 'matching' && (
           <div style={{marginTop:'8px',borderTop:'1px dashed #e5e7eb',paddingTop:'8px', background:'#b3c8f3ff', borderRadius:'6px'}}>
             <h4>添加小题</h4>
             <textarea
@@ -783,6 +922,7 @@ function QuestionPanel({ groups, setGroups, showToast }) {
             <option value="yn">观点匹配题（YES/NO/NOT GIVEN）</option>
             <option value="blank">填空题（句子填空题/段落填空题）</option>
             <option value="table">表格填空题（表格内填空）</option>
+            <option value="matching">匹配题（拖拽选项到空格）</option>
           </select>
         </div>
   {/* 移除大题添加区的选项数设置，仅在小题添加区设置 */}

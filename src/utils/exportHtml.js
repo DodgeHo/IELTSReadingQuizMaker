@@ -126,6 +126,36 @@ function renderQuestions(questions) {
       return;
     }
     
+    // 匹配题特殊处理：类似填空题，但有选项区
+    if(q.type === 'matching' && q.matchingContent && Array.isArray(q.matchingOptions)) {
+      let blankIdx = 0;
+      const startQNum = globalIndex; // 记录起始题号
+      
+      // 选项区
+      let matchHtml = '<div style="margin-bottom:15px;"><div style="font-weight:bold;margin-bottom:8px;">选项：</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;">';
+      q.matchingOptions.forEach((opt, oi) => {
+        matchHtml += `<span draggable="true" data-oi="${oi}" style="padding:6px 12px;background:#e0e7ff;border-radius:4px;cursor:grab;font-weight:bold;">${opt}</span>`;
+      });
+      matchHtml += '</div></div>';
+      
+      // 题目区
+      matchHtml += '<div><div style="font-weight:bold;margin-bottom:8px;">题目：</div>';
+      const html = q.matchingContent.replace(/\[\[空(\d+)\]\]/g, (m, n) => {
+        let ans = '';
+        if(q.matchingAnswers && q.matchingAnswers[blankIdx] != null) {
+          ans = q.matchingAnswers[blankIdx]; // 选项索引
+        }
+        const currentQNum = startQNum + blankIdx;
+        blankIdx++;
+        return `<span class="matching-drop" data-qi="${blankIdx-1}" style="display:inline-block;min-width:80px;height:32px;background:#fef3c7;border:1px dashed #f59e0b;border-radius:4px;margin:0 4px;text-align:center;line-height:32px;color:#92400e;font-weight:bold;cursor:pointer;" data-answer="${ans}" data-question-num="${currentQNum}">[${currentQNum}]</span>`;
+      });
+      matchHtml += html + '</div>';
+      
+      groupBlankContent.push(`<div style='margin-bottom:18px;padding:12px;background:#fff;border-radius:6px'><div style='font-size:16px;line-height:1.6'>${matchHtml}</div></div>`);
+      globalIndex += blankIdx; // 每个空都占一个题号
+      return;
+    }
+    
     // 跳过无题干的题目
     if(!q.text || !q.text.trim()) return;
     let opts = '';

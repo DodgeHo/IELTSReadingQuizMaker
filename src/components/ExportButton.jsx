@@ -41,6 +41,15 @@ function ExportButton({ title, readingText, footnote, questions, groups }) {
             tableAnswers: group.tableAnswers || []
           });
         }
+      } else if(group.type === 'matching') {
+        // 匹配题特殊处理：类似填空题的整段编辑
+        questions.push({
+          type: 'matching',
+          matchingContent: group.matchingContent,
+          matchingOptions: group.matchingOptions || [],
+          matchingAnswers: group.matchingAnswers || [],
+          matchingRepeatable: group.matchingRepeatable || false
+        });
       } else {
         // 其他题型按小题处理
         group.questions.forEach(q => {

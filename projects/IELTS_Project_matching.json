@@ -1,0 +1,38 @@
+{
+  "title": "",
+  "readingText": "",
+  "footnote": "",
+  "groups": [
+    {
+      "id": 1,
+      "type": "matching",
+      "instruction": "<p>Match each statement with the correct option. Drag the correct letter into each box. You may use any letter more than once if allowed.</p>",
+      "questions": [],
+      "_newQText": "",
+      "_newQOptions": [],
+      "_newQAnswer": 0,
+      "matchingContent": "<p>14 Paragraph A<span style=\"background-color: rgb(224, 242, 254); color: rgb(239, 68, 68);\">[[空1]]</span></p><p>15 Paragraph B <span style=\"background-color: rgb(224, 242, 254); color: rgb(239, 68, 68);\">[[空2]]</span></p><p>16 Paragraph C <span style=\"background-color: rgb(224, 242, 254); color: rgb(239, 68, 68);\">[[空3]]</span></p><p>17 Paragraph D <span style=\"background-color: rgb(224, 242, 254); color: rgb(239, 68, 68);\">[[空4]]</span></p><p>18 Paragraph E <span style=\"background-color: rgb(224, 242, 254); color: rgb(239, 68, 68);\">[[空5]]</span></p><p>19 Paragraph F <span style=\"background-color: rgb(224, 242, 254); color: rgb(239, 68, 68);\">[[空6]]</span></p><p>20 Paragraph G <span style=\"background-color: rgb(224, 242, 254); color: rgb(239, 68, 68);\">[[空7]]</span></p><p><br></p>",
+      "matchingAnswers": [
+        "2",
+        "1",
+        "0",
+        "8",
+        "5",
+        "7",
+        "4"
+      ],
+      "matchingOptions": [
+        "i The best moment to migrate",
+        "ii The unexplained rejection of closer feeding grounds",
+        "iii The influence of weather on the migration route",
+        "iv Physical characteristics that allow birds to migrate",
+        "v The main reason why birds migrate",
+        "vi The best wintering grounds for birds",
+        "vii Research findings on how birds migrate",
+        "viii Successful migration despite the trouble of wind",
+        "ix The contrast between long-distance migration and short-distance migration",
+        "x Mysterious migration despite lack of teaching"
+      ]
+    }
+  ]
+}
