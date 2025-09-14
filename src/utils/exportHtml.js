@@ -130,32 +130,38 @@ function renderQuestions(questions) {
     if(q.type === 'matching' && q.matchingContent && Array.isArray(q.matchingOptions)) {
       let blankIdx = 0;
       const startQNum = globalIndex; // 记录起始题号
+      
       // 匹配题容器，包含可重复性数据
       let matchHtml = `<div class="matching-container" data-repeatable="${q.matchingRepeatable || false}">`;
-      // 统一渲染slot区：选项区+题干空格
-      matchHtml += '<div style="margin-bottom:15px;"><div style="font-weight:bold;margin-bottom:8px;">选项与题目：</div><div class="matching-slots" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;">';
-      // 选项区slot（无题号）
+      
+      // 选项区
+      matchHtml += '<div style="margin-bottom:15px;"><div style="font-weight:bold;margin-bottom:8px;">选项：</div><div class="matching-options" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;">';
       q.matchingOptions.forEach((opt, oi) => {
         // 判断该选项是否已被某个空选中（仅在不可复选时）
         let hideOpt = false;
         if(!q.matchingRepeatable && Array.isArray(q.matchingAnswers)) {
           hideOpt = q.matchingAnswers.some(ans => ans === oi);
         }
-        matchHtml += `<div class="matching-slot matching-option" draggable="true" data-oi="${oi}" data-type="option" style="padding:6px 12px;background:#e0e7ff;border-radius:4px;cursor:grab;font-weight:bold;min-width:80px;text-align:center;${hideOpt ? 'display:none;' : ''}">${opt}</div>`;
+        matchHtml += `<div class="matching-option" draggable="true" data-oi="${oi}" style="padding:6px 12px;background:#e0e7ff;border-radius:4px;cursor:grab;font-weight:bold;${hideOpt ? 'display:none;' : ''}">${opt}</div>`;
       });
-      // 题干空格slot（有题号）
-      const blankCount = (q.matchingContent.match(/\[\[空(\d+)\]\]/g) || []).length;
-      for(let i=0;i<blankCount;i++) {
-        let ans = '';
-        if(q.matchingAnswers && q.matchingAnswers[i] != null) {
-          ans = q.matchingAnswers[i]; // 选项索引
-        }
-        const currentQNum = startQNum + i;
-        matchHtml += `<div class="matching-slot matching-drop" draggable="true" data-qi="${i}" data-answer="${ans}" data-question-num="${currentQNum}" data-type="drop" style="display:inline-block;min-width:120px;height:32px;background:#E2F2FE;border:1px dashed #0b80f5ff;border-radius:4px;text-align:center;line-height:32px;color:#000;font-weight:bold;cursor:pointer;vertical-align:middle;">[${currentQNum}]</div>`;
-      }
       matchHtml += '</div></div>';
+      
+      // 题目区
+      matchHtml += '<div><div style="font-weight:bold;margin-bottom:8px;">题目：</div>';
+      const html = q.matchingContent.replace(/\[\[空(\d+)\]\]/g, (m, n) => {
+        let ans = '';
+        if(q.matchingAnswers && q.matchingAnswers[blankIdx] != null) {
+          ans = q.matchingAnswers[blankIdx]; // 选项索引
+        }
+        const currentQNum = startQNum + blankIdx;
+        blankIdx++;
+        // 始终draggable，内容可拖拽
+        return `<span class="matching-drop" draggable="true" data-qi="${blankIdx-1}" data-answer="${ans}" data-question-num="${currentQNum}" style="display:inline-block;min-width:120px;height:32px;background:#E2F2FE;border:1px dashed #0b80f5ff;border-radius:4px;margin:0 4px;text-align:center;line-height:32px;color:#000;font-weight:bold;cursor:pointer;vertical-align:middle;">[${currentQNum}]</span>`;
+      });
+      matchHtml += html + '</div></div>'; // 关闭匹配题容器
+      
       groupBlankContent.push(`<div style='margin-bottom:18px;padding:12px;background:#fff;border-radius:6px'><div style='font-size:16px;line-height:1.6'>${matchHtml}</div></div>`);
-      globalIndex += blankCount; // 每个空都占一个题号
+      globalIndex += blankIdx; // 每个空都占一个题号
       return;
     }
     
