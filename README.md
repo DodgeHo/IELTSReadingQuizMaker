@@ -82,5 +82,8 @@ This project is licensed under GPL-3.0. All derivative works must also be open s
 
 ## 联系方式 / Contact
 
-如有建议或需求，请通过 Issues 联系。
+如有建议或需求，请通过 Email 联系。 
 For suggestions or requests, please use Issues.
+asdsay@gmail.com
+
+业务合作 请联系 Dodge的信号处理代码QQ群 816508289
