@@ -63,16 +63,16 @@ ipcMain.handle('save-html', async (event, { title, leftContent, rightContent, de
 // 保存项目文件
 ipcMain.handle('save-project', async (event, { data, fileName }) => {
   try {
-    // 1. 确保projects文件夹存在
-    const projectsDir = path.join(__dirname, 'projects');
-    if (!fs.existsSync(projectsDir)) {
-      fs.mkdirSync(projectsDir, { recursive: true });
+    // 1. 确保output文件夹存在
+    const outputDir = path.join(__dirname, 'output');
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
     }
 
     // 2. 设置默认保存路径
-    const defaultPath = path.join(projectsDir, fileName);
+    const defaultPath = path.join(outputDir, fileName);
 
-    // 3. 弹出保存对话框，默认路径指向projects文件夹
+    // 3. 弹出保存对话框，默认路径指向output文件夹
     const { canceled, filePath } = await dialog.showSaveDialog({
       title: '保存工程文件',
       defaultPath,

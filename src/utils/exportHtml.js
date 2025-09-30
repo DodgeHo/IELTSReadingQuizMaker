@@ -16,8 +16,9 @@ function renderQuestions(questions) {
         }
         // 先渲染有序列表的题目
         if(groupQuestions.length) {
-          html += `<ol start='${globalIndex}'>${groupQuestions.join('')}</ol>`;
-          globalIndex += groupQuestions.length;
+          // 计算起始题号：当前globalIndex减去当前组的题目数量
+          const startNum = globalIndex - groupQuestions.length;
+          html += `<ol start='${startNum}'>${groupQuestions.join('')}</ol>`;
         }
         // 再渲染填空题（无序号，但已在处理时计算过题号）
         if(groupBlankContent.length) {
@@ -135,7 +136,7 @@ function renderQuestions(questions) {
       let matchHtml = `<div class="matching-container" data-repeatable="${q.matchingRepeatable || false}">`;
       
       // 选项区
-      matchHtml += '<div style="margin-bottom:15px;"><div style="font-weight:bold;margin-bottom:8px;">选项：</div><div class="matching-options" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;">';
+      matchHtml += '<div style="margin-bottom:15px;"><div class="matching-options" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;">';
       q.matchingOptions.forEach((opt, oi) => {
         // 判断该选项是否已被某个空选中（仅在不可复选时）
         let hideOpt = false;
@@ -147,7 +148,7 @@ function renderQuestions(questions) {
       matchHtml += '</div></div>';
       
       // 题目区
-      matchHtml += '<div><div style="font-weight:bold;margin-bottom:8px;">题目：</div>';
+      matchHtml += '<div>';
       const html = q.matchingContent.replace(/\[\[空(\d+)\]\]/g, (m, n) => {
         let ans = '';
         if(q.matchingAnswers && q.matchingAnswers[blankIdx] != null) {
@@ -193,6 +194,7 @@ function renderQuestions(questions) {
         }).join('') + '</ul>';
       }
       groupQuestions.push(`<li style='margin-bottom:18px'><div style='font-size:16px;margin-bottom:6px'>${q.text}</div>${opts}</li>`);
+      globalIndex++; // 选择题也要增加题号
     }
   });
   if(groupQuestions.length || groupBlankContent.length || pendingInstruction) {
@@ -202,7 +204,9 @@ function renderQuestions(questions) {
     }
     // 先渲染有序列表的题目
     if(groupQuestions.length) {
-      html += `<ol start='${globalIndex}'>${groupQuestions.join('')}</ol>`;
+      // 计算起始题号：globalIndex减去当前组的题目数量
+      const startNum = globalIndex - groupQuestions.length;
+      html += `<ol start='${startNum}'>${groupQuestions.join('')}</ol>`;
     }
     // 再渲染填空题（无序号，但有题号）
     if(groupBlankContent.length) {

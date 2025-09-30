@@ -74,6 +74,7 @@
     // 题号导航条逻辑
     function updateNavQuestions() {
       const questions = getAllQuestions();
+      console.log('所有题目:', questions.map(q => ({type: q.type, questionNum: q.questionNum, sortKey: q.sortKey})));
       const nav = document.getElementById('nav-questions');
       nav.innerHTML = '';
       questions.forEach((q, i) => {
@@ -81,7 +82,7 @@
         if(q.type === 'blank') {
           hasAnswer = q.input.value.trim() !== '';
         } else if(q.type === 'matching') {
-          hasAnswer = q.drop.hasAttribute('data-student-answer');
+          hasAnswer = q.drop.hasAttribute('data-student-answer') && q.drop.getAttribute('data-student-answer') !== '';
         } else {
           hasAnswer = Array.from(q.radios).some(r => r.checked);
         }
@@ -263,49 +264,62 @@
 
     // 答题统计与批改功能
     function getAllQuestions() {
-      const qBlocks = document.querySelectorAll('#right ol > li');
-      const blankInputs = document.querySelectorAll('#right input.blank-input');
-      const matchingDrops = document.querySelectorAll('#right .matching-drop');
-      let questions = [];
-      
-      // 处理选择题（在ol中）
-      qBlocks.forEach((block, idx) => {
-        const radios = block.querySelectorAll('input[type=radio],input[type=checkbox]');
-        if(radios.length) {
-          questions.push({
-            el: block,
-            radios,
-            idx: questions.length,
-            selected: null,
-            correct: null,
-            type: radios[0].type === 'checkbox' ? 'multi' : 'single'
-          });
-        }
-      });
-      
-      // 处理填空题（每个空位单独作为一道题）
-      blankInputs.forEach((input, idx) => {
-        questions.push({
-          el: input.closest('div'), // 找到包含的div
-          input: input,
-          idx: questions.length,
-          type: 'blank',
-          questionNum: input.dataset.questionNum || (questions.length + 1)
+      const allQuestionElements = [];
+      // 1. 选择题（所有ol>li，按ol的start属性推算题号）
+      const ols = document.querySelectorAll('#right ol');
+      ols.forEach(ol => {
+        const startNum = parseInt(ol.getAttribute('start') || '1');
+        const lis = ol.querySelectorAll(':scope > li');
+        lis.forEach((li, idx) => {
+          const radios = li.querySelectorAll('input[type=radio],input[type=checkbox]');
+          if(radios.length) {
+            const questionNum = startNum + idx;
+            allQuestionElements.push({
+              el: li,
+              radios,
+              type: radios[0].type === 'checkbox' ? 'multi' : 'single',
+              questionNum,
+              sortKey: questionNum
+            });
+          }
         });
       });
 
-      // 处理匹配题（每个空位单独作为一道题）
-      matchingDrops.forEach((drop, idx) => {
-        questions.push({
-          el: drop.closest('div'), // 找到包含的div
-          drop: drop,
-          idx: questions.length,
-          type: 'matching',
-          questionNum: drop.dataset.questionNum || (questions.length + 1)
+      // 2. 填空题（每个空位单独作为一道题）
+      const blankInputs = document.querySelectorAll('#right input.blank-input');
+      blankInputs.forEach((input, idx) => {
+        const questionNum = parseInt(input.getAttribute('data-question-num')) || (idx + 1);
+        allQuestionElements.push({
+          el: input.closest('div'),
+          input: input,
+          type: 'blank',
+          questionNum: questionNum,
+          sortKey: questionNum
         });
       });
-      
-      return questions;
+
+      // 3. 匹配题（每个空位单独作为一道题）
+      const matchingDrops = document.querySelectorAll('#right .matching-drop');
+      matchingDrops.forEach((drop, idx) => {
+        const questionNum = parseInt(drop.getAttribute('data-question-num')) || (idx + 1);
+        allQuestionElements.push({
+          el: drop.closest('div'),
+          drop: drop,
+          type: 'matching',
+          questionNum: questionNum,
+          sortKey: questionNum
+        });
+      });
+
+      // 按题号排序
+      allQuestionElements.sort((a, b) => a.sortKey - b.sortKey);
+
+      // 重新分配idx
+      allQuestionElements.forEach((q, idx) => {
+        q.idx = idx;
+      });
+
+      return allQuestionElements;
     }
     function updateCompletedList() {
       // 默认隐藏，仅批改后显示
@@ -364,10 +378,10 @@
             if(isCorrect && userArr.length) {
               correctCount++;
               q.el.style.background = '#e6ffed';
-              detailHtml += `<div style='margin-bottom:6px;'>Q${i+1}: <span style='color:#10b981'>${userArr.join(', ')}</span></div>`;
+              detailHtml += `<div style='margin-bottom:6px;'>Q${q.questionNum}: <span style='color:#10b981'>${userArr.join(', ')}</span></div>`;
             } else {
               q.el.style.background = userArr.length ? '#ffe4e6' : '';
-              detailHtml += `<div style='margin-bottom:6px;'>Q${i+1}: <span style='color:#ef4444;font-weight:bold'>${userArr.join(', ')||'Not selected'}</span> / <span style='color:#10b981'>${correctArr.join(', ')||'-'}</span></div>`;
+              detailHtml += `<div style='margin-bottom:6px;'>Q${q.questionNum}: <span style='color:#ef4444;font-weight:bold'>${userArr.join(', ')||'Not selected'}</span> / <span style='color:#10b981'>${correctArr.join(', ')||'-'}</span></div>`;
             }
           } else {
             q.radios.forEach(r => {
@@ -378,10 +392,10 @@
             if(sel && answer && sel.value===answer) {
               correctCount++;
               q.el.style.background = '#e6ffed';
-              detailHtml += `<div style='margin-bottom:6px;'>Q${i+1}: <span style='color:#10b981'>${answer || '-'}</span></div>`;
+              detailHtml += `<div style='margin-bottom:6px;'>Q${q.questionNum}: <span style='color:#10b981'>${answer || '-'}</span></div>`;
             } else {
               q.el.style.background = sel ? '#ffe4e6' : '';
-              detailHtml += `<div style='margin-bottom:6px;'>Q${i+1}: <span style='color:#ef4444;font-weight:bold'>${userAns}</span> / <span style='color:#10b981'>${answer || '-'}</span></div>`;
+              detailHtml += `<div style='margin-bottom:6px;'>Q${q.questionNum}: <span style='color:#ef4444;font-weight:bold'>${userAns}</span> / <span style='color:#10b981'>${answer || '-'}</span></div>`;
             }
           }
         }
@@ -399,6 +413,14 @@
           q.drop.textContent = '[' + q.drop.getAttribute('data-question-num') + ']';
           q.drop.style.background = '#E2F2FE';
           q.drop.removeAttribute('data-student-answer');
+          
+          // 重置选项区显示
+          const container = q.drop.closest('.matching-container');
+          const isRepeatable = container.dataset.repeatable === 'true';
+          if(!isRepeatable) {
+            const allOptions = container.querySelectorAll('.matching-option');
+            allOptions.forEach(opt => opt.style.display = 'inline-block');
+          }
         } else {
           q.radios.forEach(r => r.checked=false);
         }

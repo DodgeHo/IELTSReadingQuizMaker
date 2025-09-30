@@ -35,7 +35,6 @@ out/
 
 # user data
 output/
-projects/
 
 # Others
 *.log
